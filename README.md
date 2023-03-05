@@ -12,7 +12,7 @@
 
 If you want to contribute to this project, please read the [contributing guidelines](CONTRIBUTING.md).
 
-### Extanding the command line
+### Extending the command line
 
 #### Cobra
 
