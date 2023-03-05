@@ -32,7 +32,7 @@ var (
 
 	aboutCmd = &cobra.Command{
 		Use:   "about",
-		Short: "Print the info about crucible-cli",
+		Short: "Print the info about zrun",
 		Long:  "",
 		Run: func(cmd *cobra.Command, args []string) {
 			figure.NewColorFigure("ZRUN", "colossal", "red", true).Print()
