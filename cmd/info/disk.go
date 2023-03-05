@@ -1,3 +1,7 @@
+// Package info
+/*
+Copyright © 2023 zcubbs https://github.com/zcubbs
+*/
 package info
 
 import (

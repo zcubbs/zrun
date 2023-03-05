@@ -1,3 +1,7 @@
+// Package bash
+/*
+Copyright © 2023 zcubbs https://github.com/zcubbs
+*/
 package bash
 
 import (
@@ -25,6 +29,8 @@ func Chmod(path string, perm os.FileMode) error {
 		log.Fatal(err)
 	}
 	fmt.Printf("File permissions after: %s\n", stats.Mode())
+
+	return nil
 }
 
 func RmDir(path string) error {

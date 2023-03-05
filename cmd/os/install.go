@@ -1,3 +1,7 @@
+// Package os
+/*
+Copyright © 2023 zcubbs https://github.com/zcubbs
+*/
 package os
 
 import (
