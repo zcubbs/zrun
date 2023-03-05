@@ -99,6 +99,7 @@ func InstallChart(kubeconfig, name, repo, namespace, version, chart string, valu
 func RepoAdd(name, url string) {
 	var settings = cli.New()
 	repoFile := settings.RepositoryConfig
+	repoFile = filepath.Clean(repoFile)
 
 	//Ensure the file directory exists as it is required for file locking
 	err := os.MkdirAll(filepath.Dir(repoFile), os.ModePerm)
