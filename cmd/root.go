@@ -6,10 +6,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/common-nighthawk/go-figure"
 	"github.com/spf13/viper"
 	"github.com/zcubbs/zrun/cmd/config"
 	"github.com/zcubbs/zrun/cmd/info"
 	zos "github.com/zcubbs/zrun/cmd/os"
+	"github.com/zcubbs/zrun/defaults"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -17,8 +19,8 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "crucible",
-		Short: "This is a CLI for the Crucible Bot project",
+		Use:   "",
+		Short: "",
 		Long:  "",
 	}
 
@@ -33,10 +35,10 @@ var (
 		Short: "Print the info about crucible-cli",
 		Long:  "",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf(configs.Splash + "\n\n")
-			fmt.Println("zrun")
-			fmt.Printf("Version: %s\n", configs.Version)
-			fmt.Println("This is a swiss army knife cli for devops engineers")
+			figure.NewColorFigure("ZRUN", "colossal", "red", true).Print()
+			figure.NewColorFigure("zrun", "morse", "red", true).Print()
+			fmt.Printf("Version: %s\n", defaults.Version)
+			fmt.Println("<zrun> is a swiss army knife cli for devops engineers")
 			fmt.Println("Copyright (c) 2023 zakaria.elbouwab (zcubbs)")
 			fmt.Println("Repository: https://github.com/zcubbs/zrun")
 		},

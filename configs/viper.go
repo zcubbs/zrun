@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
-	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -17,17 +17,19 @@ var cfgFile string
 
 var Config Configuration
 
+const defaultCfgFileName = ".zrun"
+
 var (
 	defaults = map[string]interface{}{
 		"debug.enabled":   true,
 		"kubeconfig.path": getUserHomePath() + "/.kube/config",
 	}
 	envPrefix   = "Z"
-	configName  = "config"
+	configName  = defaultCfgFileName
 	configType  = "yaml"
 	configPaths = []string{
 		".",
-		fmt.Sprintf("%s/.zrun", getUserHomePath()),
+		getUserHomePath(),
 	}
 )
 
@@ -53,7 +55,7 @@ func Bootstrap() {
 
 	if err != nil {
 		if viper.GetString("debug.enabled") == "true" {
-			log.Println("Error loading .env file")
+			fmt.Printf("[info] loading .env file")
 		}
 	}
 
@@ -65,6 +67,7 @@ func Bootstrap() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
+		initConfigFile()
 		for _, p := range configPaths {
 			viper.AddConfigPath(p)
 		}
@@ -72,9 +75,7 @@ func Bootstrap() {
 		viper.SetConfigName(configName)
 		err := viper.ReadInConfig()
 		if err != nil {
-			if viper.GetString("debug.enabled") == "true" {
-				fmt.Println(err)
-			}
+			fmt.Printf("[warn] %s\n", err)
 		}
 	}
 	viper.AutomaticEnv() // read in environment variables that match
@@ -90,6 +91,18 @@ func Bootstrap() {
 
 	err = viper.Unmarshal(&Config)
 	if err != nil {
-		log.Fatalf("could not decode config into struct: %v", err)
+		fmt.Printf("[warn] could not decode config into struct: %v", err)
+	}
+}
+
+func initConfigFile() {
+	// create cfg if not exists
+	path := filepath.Join(getUserHomePath(), defaultCfgFileName)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		file, err := os.Create(path)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer file.Close()
 	}
 }

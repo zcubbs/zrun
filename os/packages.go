@@ -6,12 +6,15 @@ package os
 
 import (
 	"fmt"
+	"github.com/zcubbs/zrun/defaults"
 	"os/exec"
 )
 
 func Install(packages ...string) error {
 	for _, p := range packages {
-		stdout, err := exec.Command("/bin/sh", "-c",
+		stdout, err := exec.Command(
+			defaults.BinSh,
+			"-c",
 			fmt.Sprintf("sudo apt install -y %s", p)).Output()
 		if err != nil {
 			return err
@@ -22,7 +25,7 @@ func Install(packages ...string) error {
 }
 
 func Update() error {
-	stdout, err := exec.Command("/bin/sh", "-c", "sudo apt update -y").Output()
+	stdout, err := exec.Command(defaults.BinSh, "-c", "sudo apt update -y").Output()
 	if err != nil {
 		return err
 	}
@@ -31,7 +34,7 @@ func Update() error {
 }
 
 func Upgrade() error {
-	stdout, err := exec.Command("/bin/sh", "-c", "sudo apt upgrade -y").Output()
+	stdout, err := exec.Command(defaults.BinSh, "-c", "sudo apt upgrade -y").Output()
 	if err != nil {
 		return err
 	}

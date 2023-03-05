@@ -16,6 +16,9 @@ var Cmd = &cobra.Command{
 	Short: "OS Helper Commands",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("os called")
+		err := cmd.Help()
+		if err != nil {
+			fmt.Println(err)
+		}
 	},
 }
