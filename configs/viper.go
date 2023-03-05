@@ -103,6 +103,11 @@ func initConfigFile() {
 		if err != nil {
 			fmt.Println(err)
 		}
-		defer file.Close()
+		defer func(file *os.File) {
+			err := file.Close()
+			if err != nil {
+				panic(err)
+			}
+		}(file)
 	}
 }
