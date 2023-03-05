@@ -13,7 +13,6 @@ import (
 	"helm.sh/helm/v3/pkg/downloader"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -124,7 +123,7 @@ func RepoAdd(name, url string) {
 		log.Fatal(err)
 	}
 
-	b, err := ioutil.ReadFile(repoFile)
+	b, err := os.ReadFile(repoFile)
 	if err != nil && !os.IsNotExist(err) {
 		log.Fatal(err)
 	}
