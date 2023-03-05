@@ -18,7 +18,6 @@ on:
       - '.gitignore'
 jobs:
   release:
-    name: lint
     runs-on: ubuntu-latest
     env:
       GO111MODULE: on
