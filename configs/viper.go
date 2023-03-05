@@ -98,6 +98,7 @@ func Bootstrap() {
 func initConfigFile() {
 	// create cfg if not exists
 	path := filepath.Join(getUserHomePath(), defaultCfgFileName)
+	path = filepath.Clean(path)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		file, err := os.Create(path)
 		if err != nil {
