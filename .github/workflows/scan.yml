@@ -1,4 +1,4 @@
-name: scan
+name: vulnerability-scan
 
 defaults:
   run:
