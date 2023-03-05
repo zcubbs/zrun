@@ -48,6 +48,9 @@ jobs:
         with:
           # Path to SARIF file relative to the root of the repository
           sarif_file: results.sarif
+        env:
+          # Must setup a GITHUB_TOKEN secret with package write access
+          GITHUB_TOKEN: ${{ secrets.GORELEASE_GITHUB_TOKEN }}
   release:
     needs: scan
     name: go-releaser
