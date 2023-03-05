@@ -2,7 +2,7 @@ FROM ubuntu:20.04
 MAINTAINER "zcubbs"
 
 # timezone
-RUN apt update && apt install -y tzdata; \
+RUN apt update && apt install -y tzdata dos2unix; \
     apt clean;
 
 # sshd
@@ -27,5 +27,5 @@ ENV ROOT_PASSWORD root
 
 EXPOSE 22
 
-ENTRYPOINT ["entry_point.sh"]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
 CMD    ["/usr/sbin/sshd", "-D", "-e"]

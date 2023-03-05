@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  zrun-ubuntu:
+    image: zrun-ubuntu
+    container_name: zrun-ubuntu
+    build:
+      context: .
+      dockerfile: scripts/docker/ubuntu/Dockerfile
+    volumes:
+      - ../../../bin/zrun_linux_amd64:/zrun/zrun
+    working_dir: /zrun
+    command: /bin/bash cat
+    ports:
+      - "2222:22"
