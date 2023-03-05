@@ -6,7 +6,6 @@ package install
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -16,6 +15,9 @@ var Cmd = &cobra.Command{
 	Short: "Install tools and apps",
 	Long:  `This command installs tools and apps.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("install called")
+		err := cmd.Help()
+		if err != nil {
+			fmt.Println(err)
+		}
 	},
 }
