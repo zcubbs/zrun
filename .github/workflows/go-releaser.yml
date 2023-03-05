@@ -31,7 +31,7 @@ jobs:
 #          version: latest
 #          args: --timeout 5m
   scan:
-    needs: lint
+#    needs: lint
     runs-on: ubuntu-latest
     env:
       GO111MODULE: on
