@@ -3,15 +3,8 @@ name: dagger-pipeline
 defaults:
   run:
     shell: bash
-on:
-  pull_request:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'README.md'
-      - '_assets/**'
-      - '.gitignore'
+on: # yamllint disable-line rule:truthy
+  workflow_dispatch:
 jobs:
   build-release:
     name: build-package-scan
