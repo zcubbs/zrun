@@ -28,3 +28,8 @@ To generate a new command:
 ```bash
 cobra-cli add <command>
 ```
+
+---
+## License
+
+[Apache 2.0](LICENSE)
