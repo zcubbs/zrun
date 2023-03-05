@@ -5,6 +5,7 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package os
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	zos "github.com/zcubbs/zrun/os"
 )
@@ -15,6 +16,7 @@ var install = &cobra.Command{
 	Short: "OS install packages",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("OS install packages", args)
 		err := zos.Install(args...)
 		if err != nil {
 			println(err.Error())

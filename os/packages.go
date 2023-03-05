@@ -5,69 +5,36 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package os
 
 import (
-	"github.com/zcubbs/zrun/defaults"
-	"os"
+	"fmt"
 	"os/exec"
 )
 
 func Install(packages ...string) error {
 	for _, p := range packages {
-		cmd := &exec.Cmd{
-			// Path is the path of the command to run.
-			Path: defaults.BinBash,
-			// Args holds command line arguments, including the command itself as Args[0].
-			Args:   []string{"sudo", "apt", "install", "-y", p},
-			Stdout: os.Stdout,
-			Stderr: os.Stdout,
-		}
-		err := cmd.Start()
+		stdout, err := exec.Command("/bin/sh", "-c",
+			fmt.Sprintf("sudo apt install -y %s", p)).Output()
 		if err != nil {
 			return err
 		}
-		err = cmd.Wait()
-		if err != nil {
-			return err
-		}
+		fmt.Println(string(stdout))
 	}
 	return nil
 }
 
 func Update() error {
-	cmd := &exec.Cmd{
-		// Path is the path of the command to run.
-		Path: defaults.BinBash,
-		// Args holds command line arguments, including the command itself as Args[0].
-		Args:   []string{"sudo", "apt", "update", "-y"},
-		Stdout: os.Stdout,
-		Stderr: os.Stdout,
-	}
-	err := cmd.Start()
+	stdout, err := exec.Command("/bin/sh", "-c", "sudo apt update -y").Output()
 	if err != nil {
 		return err
 	}
-	err = cmd.Wait()
-	if err != nil {
-		return err
-	}
+	fmt.Println(string(stdout))
 	return nil
 }
 
 func Upgrade() error {
-	cmd := &exec.Cmd{
-		// Path is the path of the command to run.
-		Path: defaults.BinBash,
-		// Args holds command line arguments, including the command itself as Args[0].
-		Args:   []string{"sudo", "apt", "upgrade", "-y"},
-		Stdout: os.Stdout,
-		Stderr: os.Stdout,
-	}
-	err := cmd.Start()
+	stdout, err := exec.Command("/bin/sh", "-c", "sudo apt upgrade -y").Output()
 	if err != nil {
 		return err
 	}
-	err = cmd.Wait()
-	if err != nil {
-		return err
-	}
+	fmt.Println(string(stdout))
 	return nil
 }
