@@ -9,7 +9,10 @@ import (
 	"github.com/common-nighthawk/go-figure"
 	"github.com/spf13/viper"
 	"github.com/zcubbs/zrun/cmd/config"
+	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/cmd/info"
+	"github.com/zcubbs/zrun/cmd/install"
+	"github.com/zcubbs/zrun/cmd/k8s"
 	zos "github.com/zcubbs/zrun/cmd/os"
 	"github.com/zcubbs/zrun/defaults"
 	"os"
@@ -58,6 +61,9 @@ func addSubCommandPalettes() {
 	rootCmd.AddCommand(config.Cmd)
 	rootCmd.AddCommand(zos.Cmd)
 	rootCmd.AddCommand(info.Cmd)
+	rootCmd.AddCommand(install.Cmd)
+	rootCmd.AddCommand(helm.Cmd)
+	rootCmd.AddCommand(k8s.Cmd)
 }
 
 func init() {
