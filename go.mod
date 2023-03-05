@@ -1,6 +1,6 @@
 module github.com/zcubbs/zrun
 
-go 1.19
+go 1.20
 
 require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
