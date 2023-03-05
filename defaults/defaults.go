@@ -6,5 +6,6 @@ package defaults
 
 const DefaultShell = "bash"
 const BinSh = "/bin/sh"
+const BinBash = "/bin/bash"
 const DefaultKubeConfigPath = "~/.kube/config"
 const Version = "v1.0.0"

@@ -5,39 +5,69 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package os
 
 import (
-	"fmt"
 	"github.com/zcubbs/zrun/defaults"
+	"os"
 	"os/exec"
 )
 
 func Install(packages ...string) error {
 	for _, p := range packages {
-		stdout, err := exec.Command(
-			defaults.BinSh,
-			"-c",
-			fmt.Sprintf("sudo apt install -y %s", p)).Output()
+		cmd := &exec.Cmd{
+			// Path is the path of the command to run.
+			Path: defaults.BinBash,
+			// Args holds command line arguments, including the command itself as Args[0].
+			Args:   []string{"sudo", "apt", "install", "-y", p},
+			Stdout: os.Stdout,
+			Stderr: os.Stdout,
+		}
+		err := cmd.Start()
 		if err != nil {
 			return err
 		}
-		fmt.Println(string(stdout))
+		err = cmd.Wait()
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func Update() error {
-	stdout, err := exec.Command(defaults.BinSh, "-c", "sudo apt update -y").Output()
+	cmd := &exec.Cmd{
+		// Path is the path of the command to run.
+		Path: defaults.BinBash,
+		// Args holds command line arguments, including the command itself as Args[0].
+		Args:   []string{"sudo", "apt", "update", "-y"},
+		Stdout: os.Stdout,
+		Stderr: os.Stdout,
+	}
+	err := cmd.Start()
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(stdout))
+	err = cmd.Wait()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func Upgrade() error {
-	stdout, err := exec.Command(defaults.BinSh, "-c", "sudo apt upgrade -y").Output()
+	cmd := &exec.Cmd{
+		// Path is the path of the command to run.
+		Path: defaults.BinBash,
+		// Args holds command line arguments, including the command itself as Args[0].
+		Args:   []string{"sudo", "apt", "upgrade", "-y"},
+		Stdout: os.Stdout,
+		Stderr: os.Stdout,
+	}
+	err := cmd.Start()
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(stdout))
+	err = cmd.Wait()
+	if err != nil {
+		return err
+	}
 	return nil
 }
