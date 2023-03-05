@@ -31,7 +31,7 @@ func Install() error {
 	}
 
 	// sh ./k3s-install.sh -s - --write-kubeconfig-mode 644
-	err = os.Chmod("k3s-install.sh", 0700)
+	err = os.Chmod("k3s-install.sh", 0600)
 	if err != nil {
 		return err
 	}
