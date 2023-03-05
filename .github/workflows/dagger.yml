@@ -1,5 +1,9 @@
-name: build-release
-on: 
+name: dagger-pipeline
+
+defaults:
+  run:
+    shell: bash
+on:
   pull_request:
   push:
     branches:
@@ -9,8 +13,8 @@ on:
       - '_assets/**'
       - '.gitignore'
 jobs:
-  dagger:
-    name: dagger-pipeline
+  build-release:
+    name: build-package-scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v3
