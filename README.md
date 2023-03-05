@@ -2,7 +2,7 @@
 
 [![lint](https://github.com/zcubbs/zrun/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/zcubbs/zrun/actions/workflows/lint.yml)
 [![release](https://github.com/zcubbs/zrun/actions/workflows/release.yml/badge.svg)](https://github.com/zcubbs/zrun/actions/workflows/release.yml)
-[![scan](https://github.com/zcubbs/zrun/actions/workflows/scan.yml/badge.svg)](https://github.com/zcubbs/zrun/actions/workflows/scan.yml)
+[![vulnerability-scan](https://github.com/zcubbs/zrun/actions/workflows/scan.yml/badge.svg)](https://github.com/zcubbs/zrun/actions/workflows/scan.yml)
 
 ---
 <p align="center">
