@@ -51,6 +51,11 @@ kill-docker-ubuntu:
 exec-ubuntu:
 	@docker exec -it zrun-ubuntu /bin/bash
 
+lint:
+	@golangci-lint run ./... -v --timeout 5m
+scan:
+	@gosec -fmt=json -out=gosec-results.json ./...
+
 vssh: vagrant-ubuntu-reload vagrant-ubuntu-ssh
 vfssh: vagrant-ubuntu vagrant-ubuntu-ssh
 
