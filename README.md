@@ -32,8 +32,13 @@ If you want to contribute to this project, please read the [contributing guideli
   - `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`
 - [Cobra CLI](https://github.com/spf13/cobra-cli) 1.2 or later
   - `go install github.com/spf13/cobra-cli@latest`
-- [VirtualBox](https://www.virtualbox.org/wiki/Downloads) 6.1 or later
-- [Vagrant](https://www.vagrantup.com/downloads) 2.2 or later
+- Virtual Machines:
+  - Windows
+    - [VirtualBox](https://www.virtualbox.org/wiki/Downloads) 6.1 or later
+    - [Vagrant](https://www.vagrantup.com/downloads) 2.2 or later
+  - MacOS
+    - [Lima](https://github.com/lima-vm/lima) 0.6.0 or later
+    - [nerdctl](https://github.com/containerd/nerdctl) 0.12.0 or later
 
 ### Tooling
 
