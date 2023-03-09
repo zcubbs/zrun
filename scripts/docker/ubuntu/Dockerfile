@@ -5,6 +5,16 @@ MAINTAINER "zcubbs"
 RUN apt update && apt install -y tzdata dos2unix; \
     apt clean;
 
+# install go
+RUN apt update && apt install -y wget; \
+    wget https://go.dev/dl/go1.20.2.linux-amd64.tar.gz; \
+    rm -rf /usr/local/go && tar -C /usr/local -xzf go1.20.2.linux-amd64.tar.gz; \
+    apt clean;
+
+ENV PATH $PATH:/usr/local/go/bin
+RUN go version
+
+
 # sshd
 RUN mkdir /run/sshd; \
     apt install -y openssh-server; \
