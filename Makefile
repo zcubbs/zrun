@@ -4,6 +4,7 @@ LINUX=$(EXECUTABLE)_linux_amd64
 DARWIN=$(EXECUTABLE)_darwin_amd64
 VERSION=$(shell git describe --tags --always --long --dirty)
 VAGRANT_DIR=scripts/vagrant/ubuntu
+CURRENT_DIR=$(shell pwd)
 
 .PHONY: build test
 
@@ -39,14 +40,28 @@ clean:
 	@del /f bin\$(LINUX)
 	@del /f bin\$(DARWIN)
 
+d: build-docker-ubuntu run-docker-ubuntu
+db: build-docker-ubuntu
+dk: kill-docker-ubuntu
+dx: exec-ubuntu
+dd: mount-on-docker
+
+build-docker-ubuntu:
+	@docker build -t zrun-ubuntu -f .\scripts\docker\ubuntu\Dockerfile .
+
 run-docker-ubuntu: kill-docker-ubuntu clean build
 	@echo "Running Ubuntu"
-	@docker build -t zrun-ubuntu -f .\scripts\docker\ubuntu\Dockerfile .
 	@docker-compose -f .\scripts\docker\ubuntu\docker-compose.yaml up -d
 	@docker exec -it zrun-ubuntu /bin/bash -c "./zrun about"
 
 kill-docker-ubuntu:
 	@docker-compose -f .\scripts\docker\ubuntu\docker-compose.yaml down -v
+
+mount-on-docker:
+	@docker rm -f zrun-live
+	@echo "${CURDIR}"
+	@docker run -d -v "${CURDIR}":/app -w /app --name zrun-live zrun-ubuntu tail -f /dev/null
+	@docker exec -it zrun-live /bin/bash
 
 exec-ubuntu:
 	@docker exec -it zrun-ubuntu /bin/bash
@@ -56,8 +71,10 @@ lint:
 scan:
 	@gosec -fmt=json -out=gosec-results.json ./...
 
+v: vagrant-ubuntu-reload
 vssh: vagrant-ubuntu-reload vagrant-ubuntu-ssh
 vfssh: vagrant-ubuntu vagrant-ubuntu-ssh
+vk: kill-vagrant-ubuntu
 
 vagrant-ubuntu: kill-vagrant-ubuntu vagrant-ubuntu-reload
 
