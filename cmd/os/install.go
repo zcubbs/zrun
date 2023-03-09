@@ -10,7 +10,7 @@ import (
 	zos "github.com/zcubbs/zrun/os"
 )
 
-// update represents the list command
+// install represents the list command
 var install = &cobra.Command{
 	Use:   "install",
 	Short: "OS install packages",
