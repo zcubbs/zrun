@@ -17,14 +17,8 @@ var addUser = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Add user", args)
-		u := &zos.User{
-			Name:      args[0],
-			Directory: "",
-			Group:     "",
-			Shell:     "",
-		}
 
-		passwd, err := zos.AddUserIfNotExist(u)
+		passwd, err := zos.AddUserIfNotExist(args[0])
 		if err != nil {
 			panic(err)
 			return

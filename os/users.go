@@ -15,13 +15,6 @@ const (
 	userFile string = "/etc/passwd"
 )
 
-type User struct {
-	Name      string `json:"name"`
-	Directory string `json:"directory"`
-	Group     string `json:group`
-	Shell     string `json:shell`
-}
-
 // ReadEtcPasswd file /etc/passwd and return slice of users
 func ReadEtcPasswd() (list []string) {
 
@@ -29,7 +22,12 @@ func ReadEtcPasswd() (list []string) {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(file)
 
 	r := bufio.NewScanner(file)
 
@@ -64,24 +62,24 @@ func CreateRandom(n int) string {
 }
 
 // AddUserIfNotExist check if user exist on the host
-func AddUserIfNotExist(u *User) (string, error) {
+func AddUserIfNotExist(name string) (string, error) {
 
 	users := ReadEtcPasswd()
 
-	if check(users, u.Name) {
+	if check(users, name) {
 		return "", errors.New("User already exists")
 	} else {
-		return AddNewUser(u)
+		return AddNewUser(name)
 	}
 }
 
 // AddNewUser is created by executing shell command useradd
-func AddNewUser(u *User) (string, error) {
+func AddNewUser(name string) (string, error) {
 
 	encrypt := base64.StdEncoding.EncodeToString([]byte(CreateRandom(9)))
 
-	argUser := []string{"--disabled-password", "--gecos", "\"\"", u.Name}
-	argPass := []string{"-c", fmt.Sprintf("echo %s:%s | chpasswd", u.Name, encrypt)}
+	argUser := []string{"--disabled-password", "--gecos", "\"\"", name}
+	argPass := []string{"-c", fmt.Sprintf("echo %s:%s | chpasswd", name, encrypt)}
 
 	userCmd := exec.Command("adduser", argUser...)
 	passCmd := exec.Command("/bin/sh", argPass...)
