@@ -21,7 +21,6 @@ var addUser = &cobra.Command{
 		passwd, err := zos.AddUserIfNotExist(args[0])
 		if err != nil {
 			panic(err)
-			return
 		}
 
 		fmt.Printf("User added successfully. Password: %s\n", passwd)
@@ -38,8 +37,7 @@ var deleteUser = &cobra.Command{
 
 		err := zos.DeleteUserIfExist(args[0])
 		if err != nil {
-			fmt.Println("User doesn't exists")
-			return
+			panic(err)
 		}
 
 		fmt.Println("User deleted successfully")
