@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/bash"
+	"github.com/zcubbs/zrun/configs"
+	"github.com/zcubbs/zrun/helm"
 	"log"
 )
 
@@ -34,7 +36,10 @@ func init() {
 }
 
 func nukeOperator() error {
-	// TODO: delete awx operator
+	kubeconfig := configs.Config.Kubeconfig.Path
+	// Install charts
+	helm.UninstallChart(kubeconfig, "awx-operator", "default")
+
 	return nil
 }
 

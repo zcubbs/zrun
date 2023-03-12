@@ -22,12 +22,12 @@ var install = &cobra.Command{
 	Short: "install awx",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		//err := installOperator()
-		//if err != nil {
-		//	log.Fatal(err)
-		//}
+		err := installOperator()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		err := deployInstance(instanceTmpl, secretTmpl)
+		err = deployInstance(instanceTmpl, secretTmpl)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -68,24 +68,25 @@ stringData:
 `
 
 func installOperator() error {
+	fmt.Println("installing awx operator")
 	kubeconfig := configs.Config.Kubeconfig.Path
 	helm.ExecuteInstallChartCmd(
 		kubeconfig,
 		"awx-operator",
 		"awx-operator",
 		"https://ansible.github.io/awx-operator/",
-		"awx",
+		"default",
 		"",
 		map[string]interface{}{},
 	)
+
 	return nil
 }
 
 func deployInstance(instanceTmplStr, secretTmplStr string) error {
 	fmt.Println("deploying awx instance")
-
 	var tmplData = map[string]string{
-		"Namespace":    "awx",
+		"Namespace":    "default",
 		"InstanceName": "awx",
 		"Password":     "admin",
 	}
