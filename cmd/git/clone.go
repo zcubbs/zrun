@@ -1,3 +1,7 @@
+// Package git
+/*
+Copyright © 2023 zcubbs https://github.com/zcubbs
+*/
 package git
 
 import (
@@ -84,4 +88,6 @@ func init() {
 	clone.Flags().BoolVarP(&gitAskCredentials, "ask-credentials", "", false, "Ask for credentials")
 	clone.Flags().StringVarP(&gitUsername, "username", "", "", "Username")
 	clone.Flags().StringVarP(&gitPassword, "password", "", "", "Password")
+
+	Cmd.AddCommand(clone)
 }
