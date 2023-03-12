@@ -1,8 +1,8 @@
-// Package install
+// Package awx
 /*
 Copyright © 2023 zcubbs https://github.com/zcubbs
 */
-package install
+package awx
 
 import (
 	"fmt"
@@ -11,9 +11,9 @@ import (
 
 // Cmd represents the install command
 var Cmd = &cobra.Command{
-	Use:   "install",
-	Short: "Install tools and apps",
-	Long:  `This command installs tools and apps.`,
+	Use:   "awx",
+	Short: "Awx Management Commands",
+	Long:  `This command manages AWX Instances.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := cmd.Help()
 		if err != nil {

@@ -15,30 +15,21 @@ func Install() error {
 		"curl",
 		"https://get.k3s.io",
 		"-o",
-		"k3s-install.sh",
-	)
-	if err != nil {
-		return err
-	}
-
-	// ls -l
-	err = bash.ExecuteCmd(
-		"ls",
-		"-l",
+		"/tmp/k3s-install.sh",
 	)
 	if err != nil {
 		return err
 	}
 
 	// sh ./k3s-install.sh -s - --write-kubeconfig-mode 644
-	err = os.Chmod("k3s-install.sh", 0600)
+	err = os.Chmod("/tmp/k3s-install.sh", 0700)
 	if err != nil {
 		return err
 	}
 
 	_, err = bash.ExecuteScript(
-		"./k3s-install.sh",
-		"./k3s-install.sh",
+		"/tmp/k3s-install.sh",
+		"/tmp/k3s-install.sh",
 		"-s",
 		"-",
 		"--write-kubeconfig-mode=644",

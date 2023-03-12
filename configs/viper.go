@@ -22,7 +22,7 @@ const defaultCfgFileName = ".zrun"
 var (
 	defaults = map[string]interface{}{
 		"debug.enabled":   true,
-		"kubeconfig.path": getUserHomePath() + "/.kube/config",
+		"kubeconfig.path": "/etc/rancher/k3s/k3s.yaml",
 	}
 	envPrefix   = "Z"
 	configName  = defaultCfgFileName

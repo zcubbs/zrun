@@ -1,8 +1,8 @@
-// Package helm
+// Package k3s
 /*
 Copyright © 2023 zcubbs https://github.com/zcubbs
 */
-package helm
+package k3s
 
 import (
 	"fmt"
@@ -11,8 +11,8 @@ import (
 
 // Cmd represents the os command
 var Cmd = &cobra.Command{
-	Use:   "helm",
-	Short: "Helm Application Deployment/Control Commands",
+	Use:   "k3s",
+	Short: "K3s management commands",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := cmd.Help()

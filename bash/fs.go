@@ -61,3 +61,25 @@ func DirExists(path string) bool {
 
 	return false
 }
+
+func ExtractTarGz(tarPath string, destPath string) error {
+	// tar -zxvf <tarPath> -C <destPath>
+	err := ExecuteCmd("tar", "-zxvf", tarPath, "-C", destPath)
+	if err != nil {
+		fmt.Println("Error extracting tar.gz file: ", tarPath, err)
+		return err
+	}
+
+	return nil
+}
+
+func ExtractTarGzWithFile(tarPath string, file string, destPath string) error {
+	// tar -zxvf <tarPath> -C <destPath>
+	err := ExecuteCmd("tar", "-zxvf", tarPath, "-C", destPath, file)
+	if err != nil {
+		fmt.Println("Error extracting tar.gz file: ", tarPath, err)
+		return err
+	}
+
+	return nil
+}
