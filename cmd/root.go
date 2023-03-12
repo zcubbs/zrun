@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/zcubbs/zrun/cmd/awx"
 	"github.com/zcubbs/zrun/cmd/config"
+	"github.com/zcubbs/zrun/cmd/git"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/cmd/info"
 	"github.com/zcubbs/zrun/cmd/k3s"
@@ -68,6 +69,7 @@ func addSubCommandPalettes() {
 	rootCmd.AddCommand(k8s.Cmd)
 	rootCmd.AddCommand(k3s.Cmd)
 	rootCmd.AddCommand(k9s.Cmd)
+	rootCmd.AddCommand(git.Cmd)
 }
 
 func init() {
