@@ -68,11 +68,12 @@ exec-ubuntu:
 
 lint:
 	@golangci-lint run ./... -v --timeout 5m
+
 scan:
-	@gosec -fmt=json -out=gosec-results.json ./...
+	@gosec -fmt=json -out=gosec-results.json "./..."
 
 v: vagrant-ubuntu-reload
-vssh: vagrant-ubuntu-reload vagrant-ubuntu-ssh
+vssh: vagrant-ubuntu-ssh
 vfssh: vagrant-ubuntu vagrant-ubuntu-ssh
 vk: kill-vagrant-ubuntu
 
