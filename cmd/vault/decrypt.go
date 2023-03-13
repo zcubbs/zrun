@@ -32,7 +32,7 @@ var decrypt = &cobra.Command{
 
 			decryptKey = k
 		}
-		if encryptFile != "" {
+		if decryptFile != "" {
 			s, err := zv.DecryptFile(decryptFile, decryptKey)
 			if err != nil {
 				panic(err)
@@ -48,6 +48,7 @@ var decrypt = &cobra.Command{
 		}
 
 		ds := zv.Decrypt(s, decryptKey)
+		fmt.Println()
 		fmt.Println(ds)
 	},
 }
@@ -64,8 +65,8 @@ func getDecryptKey() (string, error) {
 }
 
 func init() {
-	encrypt.Flags().StringVarP(&decryptFile, "file", "f", "", "File to decrypt")
-	encrypt.Flags().StringVarP(&decryptKey, "key", "k", "", "Key to decrypt with")
+	decrypt.Flags().StringVarP(&decryptFile, "file", "f", "", "File to decrypt")
+	decrypt.Flags().StringVarP(&decryptKey, "key", "k", "", "Key to decrypt with")
 
 	Cmd.AddCommand(decrypt)
 }

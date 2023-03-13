@@ -45,6 +45,7 @@ var encrypt = &cobra.Command{
 		}
 
 		es := zv.Encrypt(s, encryptKey)
+		fmt.Println()
 		fmt.Println(es)
 	},
 }

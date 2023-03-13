@@ -17,6 +17,7 @@ import (
 	"github.com/zcubbs/zrun/cmd/k8s"
 	"github.com/zcubbs/zrun/cmd/k9s"
 	zos "github.com/zcubbs/zrun/cmd/os"
+	"github.com/zcubbs/zrun/cmd/vault"
 	"github.com/zcubbs/zrun/defaults"
 	"os"
 
@@ -49,8 +50,6 @@ var (
 			fmt.Println("Repository: https://github.com/zcubbs/zrun")
 		},
 	}
-
-	persistRootFlag bool
 )
 
 func Execute() {
@@ -70,10 +69,10 @@ func addSubCommandPalettes() {
 	rootCmd.AddCommand(k3s.Cmd)
 	rootCmd.AddCommand(k9s.Cmd)
 	rootCmd.AddCommand(git.Cmd)
+	rootCmd.AddCommand(vault.Cmd)
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolVarP(&persistRootFlag, "persist", "p", false, "Persist the CLI")
 	rootCmd.AddCommand(aboutCmd)
 	rootCmd.AddCommand(viperCommand)
 	addSubCommandPalettes()
