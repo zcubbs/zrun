@@ -1,0 +1,9 @@
+linters-settings:
+  gosec:
+    # To specify a set of rules to explicitly exclude.
+    # Available rules: https://github.com/securego/gosec#available-rules
+    excludes:
+      - G204 # Audit use of command execution
+      - G304 # File path provided as taint input
+      - G303 # Creating tempfile using a predictable path
+      - G306 # Poor file permissions used when writing to a new file

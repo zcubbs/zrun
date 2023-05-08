@@ -121,6 +121,9 @@ func configureAwx() error {
 
 func applyTmpl(tmplStr string, tmplData map[string]string) error {
 	tmpl, err := template.New("tmpManifest").Parse(tmplStr)
+	if err != nil {
+		return err
+	}
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, tmplData); err != nil {
 		return err

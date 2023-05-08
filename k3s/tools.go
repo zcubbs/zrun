@@ -37,6 +37,9 @@ func InstallK9s() error {
 		"/tmp/k9s",
 		"/usr/local/bin/k9s",
 	)
+	if err != nil {
+		return err
+	}
 
 	// chmod +x /usr/local/bin/k9s
 	err = bash.Chmod("/usr/local/bin/k9s", 0700)
