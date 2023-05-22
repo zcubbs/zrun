@@ -20,9 +20,9 @@ require (
 	golang.org/x/text v0.9.0
 	gopkg.in/yaml.v2 v2.4.0
 	helm.sh/helm/v3 v3.11.2
-	k8s.io/api v0.26.3
-	k8s.io/apimachinery v0.27.1
-	k8s.io/client-go v0.26.3
+	k8s.io/api v0.27.2
+	k8s.io/apimachinery v0.27.2
+	k8s.io/client-go v0.27.2
 )
 
 require (
@@ -165,7 +165,7 @@ require (
 	k8s.io/cli-runtime v0.26.0 // indirect
 	k8s.io/component-base v0.26.0 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a // indirect
+	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	k8s.io/kubectl v0.26.0 // indirect
 	k8s.io/utils v0.0.0-20230209194617-a36077c30491 // indirect
 	oras.land/oras-go v1.2.2 // indirect
