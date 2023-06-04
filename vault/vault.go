@@ -1,11 +1,9 @@
 package vault
 
 import (
-	"bufio"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"fmt"
 	"io"
 	"os"
 )
@@ -110,17 +108,17 @@ func DecryptFile(file, key string) (string, error) {
 	return decrypted, nil
 }
 
-func readline() string {
-	bio := bufio.NewReader(os.Stdin)
-	line, _, err := bio.ReadLine()
-	if err != nil {
-		fmt.Println(err)
-	}
-	return string(line)
-}
+//func readline() string {
+//	bio := bufio.NewReader(os.Stdin)
+//	line, _, err := bio.ReadLine()
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//	return string(line)
+//}
 
 func writeToFile(data, file string) error {
-	err := os.WriteFile(file, []byte(data), 777)
+	err := os.WriteFile(file, []byte(data), 0777)
 	if err != nil {
 		return err
 	}

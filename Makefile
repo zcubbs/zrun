@@ -70,7 +70,7 @@ lint:
 	@golangci-lint run ./... -v --timeout 5m
 
 scan:
-	@gosec -fmt=json -out=gosec-results.json "./..."
+	@gosec -conf .gosec.config.json -fmt=json -out=gosec-results.json "./..."
 
 v: vagrant-ubuntu-reload
 vssh: vagrant-ubuntu-ssh
