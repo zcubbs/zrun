@@ -13,6 +13,13 @@
 </p>
 
 ---
+
+## Install
+
+```bash
+curl -sfL https://raw.githubusercontent.com/zcubbs/zrun/main/scripts/install/install.sh | sh
+```
+
 ## Contributing
 
 If you want to contribute to this project, please read the [contributing guidelines](CONTRIBUTING.md).
