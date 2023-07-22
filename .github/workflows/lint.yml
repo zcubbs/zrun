@@ -13,6 +13,13 @@ on:
     paths-ignore:
       - 'README.md'
       - '_assets/**'
+      - '.github/**'
+      - 'scripts/**'
+      - 'LICENSE'
+      - 'Makefile'
+      - '_goreleaser.yaml'
+      - 'golangci.yaml'
+      - '.dockerignore
       - '.gitignore'
 jobs:
   lint:
