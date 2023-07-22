@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the URL of the GitHub repository containing the binary.
-URL="https://github.com/zcubbs/zrun/releases/download/v1.1.1/zrun_Linux_x86_64.tar.gz"
+URL="https://github.com/zcubbs/zrun/releases/download/latest/zrun_Linux_x86_64.tar.gz"
 
 # Get the file name from the URL
 FILE=$(basename $URL)
