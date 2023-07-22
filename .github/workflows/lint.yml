@@ -19,7 +19,7 @@ on:
       - 'Makefile'
       - '_goreleaser.yaml'
       - 'golangci.yaml'
-      - '.dockerignore
+      - '.dockerignore'
       - '.gitignore'
 jobs:
   lint:
