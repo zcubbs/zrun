@@ -36,9 +36,9 @@ var install = &cobra.Command{
 }
 
 func init() {
-	install.Flags().StringArrayVarP(&disable, "disable", "dis", nil, "list of k3s features to disable")
-	install.Flags().StringVarP(&dataDir, "dataDir", "dir", "", "data storage directory")
-	install.Flags().StringVarP(&volumeStorageDir, "volumeStorageDir", "vs", "", "volume storage directory")
-	install.Flags().StringVarP(&writeKubeconfigMode, "writeKubeconfigMode", "wm", "", "write kubeconfig mode")
+	install.Flags().StringArrayVar(&disable, "disable", nil, "list of k3s features to disable")
+	install.Flags().StringVar(&dataDir, "dataDir", "", "data storage directory")
+	install.Flags().StringVar(&volumeStorageDir, "volumeStorageDir", "", "volume storage directory")
+	install.Flags().StringVar(&writeKubeconfigMode, "writeKubeconfigMode", "", "write kubeconfig mode")
 	Cmd.AddCommand(install)
 }
