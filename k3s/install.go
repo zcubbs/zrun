@@ -16,7 +16,7 @@ const InstallScript = "/tmp/k3s-install.sh"
 const UninstallScript = "/usr/local/bin/k3s-uninstall.sh"
 
 const ConfigTemplate = "config.tmpl"
-const ConfigFileLocation = "/etc/rancher/k3s/k3s.yaml"
+const ConfigFileLocation = "/etc/rancher/k3s/config.yaml"
 
 type Config struct {
 	Disable                 []string

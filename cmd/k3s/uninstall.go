@@ -12,8 +12,8 @@ import (
 
 // uninstall represents the list command
 var uninstall = &cobra.Command{
-	Use:   "install",
-	Short: "install k3s",
+	Use:   "uninstall",
+	Short: "uninstall k3s",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := k3s.Uninstall()
