@@ -73,14 +73,14 @@ func Install(config Config) error {
 
 	// curl -sfL https://get.k3s.io -o k3s-install.sh
 	err = bash.ExecuteCmd(
-		"curl",
+		"wget",
 		"https://get.k3s.io",
 		"-o",
 		InstallScript,
 	)
 	if err != nil {
 		return errors.New(fmt.Sprintf("error while running %s \n%v",
-			"curl -sfL https://get.k3s.io -o k3s-install.sh",
+			"wget https://get.k3s.io -o k3s-install.sh",
 			err,
 		))
 	}
