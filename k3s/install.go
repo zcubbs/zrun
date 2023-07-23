@@ -5,10 +5,10 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package k3s
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/zcubbs/zrun/bash"
-	xos "github.com/zcubbs/zrun/os"
+	"io"
+	"log"
 	"os"
 	"text/template"
 )
@@ -17,7 +17,7 @@ const InstallScript = "/tmp/k3s-install.sh"
 const UninstallScript = "/usr/local/bin/k3s-uninstall.sh"
 
 const ConfigTemplate = "config.tmpl"
-const ConfigFileLocation = "/etc/rancher/k3s"
+const ConfigFileLocation = "/etc/rancher/k3s/config.yaml"
 
 type Config struct {
 	Disable                 []string
@@ -27,11 +27,43 @@ type Config struct {
 	WriteKubeconfigMode     string
 }
 
+var configTmpl = `
+---
+
+{{ if .WriteKubeconfigMode }}
+write-kubeconfig-mode: {{ .WriteKubeconfigMode }}
+{{ end }}
+{{ if .TlsSan }}
+tls-san: 
+	{{ range .TlsSan }}
+	- {{ . }}
+	{{ end }}
+{{ end }}
+{{ if .Disable }}
+disable: 
+	{{ range .Disable }}
+	- {{ . }}
+	{{ end }}
+{{ end }}
+{{ if .DataDir }}
+data-dir: {{ .DataDir }}
+{{ end }}
+{{ if .DefaultLocalStoragePath }}
+default-local-storage-path: {{ .DefaultLocalStoragePath }}
+{{ end }}
+`
+
 func Install(config Config) error {
+	fmt.Printf("%+v\n", config)
 	// prepare config file
-	err := createConfigFileFromTemplate(config)
+	err := WriteTemplateToFile(configTmpl, config, ConfigFileLocation)
 	if err != nil {
 		return err
+	}
+
+	err = PrintFileContents(ConfigFileLocation)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// curl -sfL https://get.k3s.io -o k3s-install.sh
@@ -65,31 +97,38 @@ func Install(config Config) error {
 	return nil
 }
 
-func createConfigFileFromTemplate(config Config) error {
-	err := xos.CreateDirIfNotExist(ConfigFileLocation)
+func WriteTemplateToFile(templateStr string, config Config, outputFilePath string) error {
+	// Create a new template and parse the letter into it.
+	tmpl, err := template.New("myTemplate").Parse(templateStr)
 	if err != nil {
 		return err
 	}
-	tmpl, err := template.New("tmpManifest").Parse(ConfigTemplate)
+
+	// Open the output file
+	f, err := os.OpenFile(outputFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, config); err != nil {
-		return err
-	}
+	defer f.Close()
 
-	fmt.Println(buf.String())
-
-	err = os.WriteFile(
-		fmt.Sprintf("%s/%s", ConfigFileLocation, "config.yaml"),
-		buf.Bytes(),
-		0644)
+	// Apply the template to the config data and write to the file
+	err = tmpl.Execute(f, config)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func PrintFileContents(filePath string) error {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = io.Copy(os.Stdout, f)
+	return err
 }
 
 func Uninstall() error {

@@ -12,6 +12,7 @@ import (
 
 var (
 	disable             []string
+	tlsSan              []string
 	dataDir             string
 	volumeStorageDir    string
 	writeKubeconfigMode string
@@ -25,6 +26,7 @@ var install = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := k3s.Install(k3s.Config{
 			Disable:                 disable,
+			TlsSan:                  tlsSan,
 			DataDir:                 dataDir,
 			DefaultLocalStoragePath: volumeStorageDir,
 			WriteKubeconfigMode:     writeKubeconfigMode,
@@ -36,9 +38,10 @@ var install = &cobra.Command{
 }
 
 func init() {
+	install.Flags().StringArrayVar(&tlsSan, "tls-san", nil, "list of k3s tls to add to certificate")
 	install.Flags().StringArrayVar(&disable, "disable", nil, "list of k3s features to disable")
-	install.Flags().StringVar(&dataDir, "dataDir", "", "data storage directory")
-	install.Flags().StringVar(&volumeStorageDir, "volumeStorageDir", "", "volume storage directory")
-	install.Flags().StringVar(&writeKubeconfigMode, "writeKubeconfigMode", "", "write kubeconfig mode")
+	install.Flags().StringVar(&dataDir, "data-dir", "", "data storage directory")
+	install.Flags().StringVar(&volumeStorageDir, "volume-storage-dir", "", "volume storage directory")
+	install.Flags().StringVar(&writeKubeconfigMode, "write-kubeconfig-Mode", "", "write kubeconfig mode")
 	Cmd.AddCommand(install)
 }
