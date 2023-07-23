@@ -38,3 +38,8 @@ if [[ $? -ne 0 ]]; then
 else
   echo "Installation succeeded."
 fi
+
+# Remove the downloaded file
+rm $FILE
+
+zrun about
