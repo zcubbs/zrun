@@ -6,6 +6,8 @@ URL="https://github.com/zcubbs/zrun/releases/download/latest/zrun_Linux_x86_64.t
 # Get the file name from the URL
 FILE=$(basename $URL)
 
+echo "Installing $FILE"
+
 # Download the binary
 curl -L -O $URL
 
