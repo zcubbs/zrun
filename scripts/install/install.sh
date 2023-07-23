@@ -12,7 +12,11 @@ echo "Installing $FILE"
 curl -L -O $URL
 
 # Unpack the binary
-tar -xzf $FILE
+if [[ $FILE == *.tar.gz ]]; then
+  tar -xzf $FILE
+elif [[ $FILE == *.zip ]]; then
+  unzip $FILE
+fi
 
 # The file that has been unpacked will usually be the binary itself.
 BINARY="zrun"
