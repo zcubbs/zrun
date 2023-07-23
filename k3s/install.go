@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/zcubbs/zrun/bash"
+	xos "github.com/zcubbs/zrun/os"
 	"os"
 	"text/template"
 )
@@ -16,7 +17,7 @@ const InstallScript = "/tmp/k3s-install.sh"
 const UninstallScript = "/usr/local/bin/k3s-uninstall.sh"
 
 const ConfigTemplate = "config.tmpl"
-const ConfigFileLocation = "/etc/rancher/k3s/config.yaml"
+const ConfigFileLocation = "/etc/rancher/k3s"
 
 type Config struct {
 	Disable                 []string
@@ -65,6 +66,10 @@ func Install(config Config) error {
 }
 
 func createConfigFileFromTemplate(config Config) error {
+	err := xos.CreateDirIfNotExist(ConfigFileLocation)
+	if err != nil {
+		return err
+	}
 	tmpl, err := template.New("tmpManifest").Parse(ConfigTemplate)
 	if err != nil {
 		return err
@@ -76,7 +81,10 @@ func createConfigFileFromTemplate(config Config) error {
 
 	fmt.Println(buf.String())
 
-	err = os.WriteFile(ConfigFileLocation, buf.Bytes(), 0644)
+	err = os.WriteFile(
+		fmt.Sprintf("%s/%s", ConfigFileLocation, "config.yaml"),
+		buf.Bytes(),
+		0644)
 	if err != nil {
 		return err
 	}
