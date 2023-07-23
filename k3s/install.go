@@ -7,6 +7,7 @@ package k3s
 import (
 	"fmt"
 	"github.com/zcubbs/zrun/bash"
+	osx "github.com/zcubbs/zrun/os"
 	"io"
 	"log"
 	"os"
@@ -17,7 +18,7 @@ const InstallScript = "/tmp/k3s-install.sh"
 const UninstallScript = "/usr/local/bin/k3s-uninstall.sh"
 
 const ConfigTemplate = "config.tmpl"
-const ConfigFileLocation = "/etc/rancher/k3s/config.yaml"
+const ConfigFileLocation = "/etc/rancher/k3s"
 
 type Config struct {
 	Disable                 []string
@@ -27,41 +28,44 @@ type Config struct {
 	WriteKubeconfigMode     string
 }
 
-var configTmpl = `
----
-
-{{ if .WriteKubeconfigMode }}
-write-kubeconfig-mode: {{ .WriteKubeconfigMode }}
-{{ end }}
-{{ if .TlsSan }}
-tls-san: 
-	{{ range .TlsSan }}
-	- {{ . }}
-	{{ end }}
-{{ end }}
-{{ if .Disable }}
+var configTmpl = `---
+{{- if .Disable }}
 disable: 
-	{{ range .Disable }}
-	- {{ . }}
-	{{ end }}
-{{ end }}
-{{ if .DataDir }}
-data-dir: {{ .DataDir }}
-{{ end }}
-{{ if .DefaultLocalStoragePath }}
+{{- range $val := $.Disable }}
+  - {{ $val }}
+{{- end }}
+{{- end }}
+{{- if .DefaultLocalStoragePath }}
 default-local-storage-path: {{ .DefaultLocalStoragePath }}
-{{ end }}
+{{- end }}
+{{- if .TlsSan }}
+tls-san:
+{{- range $val := $.TlsSan }}
+  - {{ $val }}
+{{- end }}
+{{- end }}
+{{- if .DataDir }}
+data-dir: {{ .DataDir }}
+{{- end }}
+{{- if .WriteKubeconfigMode }}
+write-kubeconfig-mode: {{ .WriteKubeconfigMode }}
+{{- end }}
 `
 
 func Install(config Config) error {
 	fmt.Printf("%+v\n", config)
 	// prepare config file
-	err := WriteTemplateToFile(configTmpl, config, ConfigFileLocation)
+	err := osx.CreateDirIfNotExist(ConfigFileLocation)
+	if err != nil {
+		return err
+	}
+	targetFile := fmt.Sprintf("%s/%s", ConfigFileLocation, "config.yaml")
+	err = WriteTemplateToFile(configTmpl, config, targetFile)
 	if err != nil {
 		return err
 	}
 
-	err = PrintFileContents(ConfigFileLocation)
+	err = PrintFileContents(targetFile)
 	if err != nil {
 		log.Fatal(err)
 	}
