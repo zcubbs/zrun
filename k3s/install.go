@@ -73,14 +73,14 @@ func Install(config Config) error {
 
 	// curl -sfL https://get.k3s.io -o k3s-install.sh
 	err = bash.ExecuteCmd(
-		"wget",
+		"curl",
 		"https://get.k3s.io",
 		"-o",
 		InstallScript,
 	)
 	if err != nil {
 		return errors.New(fmt.Sprintf("error while running %s \n%v",
-			"wget https://get.k3s.io -o k3s-install.sh",
+			"curl https://get.k3s.io -o k3s-install.sh",
 			err,
 		))
 	}
@@ -89,7 +89,7 @@ func Install(config Config) error {
 	err = os.Chmod("/tmp/k3s-install.sh", 0700)
 	if err != nil {
 		return errors.New(fmt.Sprintf("error while running %s \n%v",
-			"chmod 0700 ./tmp/k3s-install.sh",
+			"chmod 0700 ./tmp/k3s-install.sh -s - --write-kubeconfig-mode 644",
 			err,
 		))
 	}
