@@ -1,3 +1,7 @@
+// Package vault provides a set of functions to interact with the vault.
+/*
+Copyright © 2023 zcubbs https://github.com/zcubbs
+*/
 package vault
 
 import (
