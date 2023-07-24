@@ -17,7 +17,7 @@ on:
       - 'scripts/**'
       - 'LICENSE'
       - 'Makefile'
-      - '_goreleaser.yaml'
+      - '.goreleaser.yaml'
       - 'golangci.yaml'
       - '.dockerignore'
       - '.gitignore'

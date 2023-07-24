@@ -24,7 +24,7 @@ jobs:
           # either 'goreleaser' (default) or 'goreleaser-pro':
           distribution: goreleaser
           version: latest
-          args: release -f _goreleaser.yaml --clean --verbose
+          args: release -f .goreleaser.yaml --clean --verbose
         env:
           # Must setup a GITHUB_TOKEN secret with package write access
           GITHUB_TOKEN: ${{ secrets.GORELEASE_GITHUB_TOKEN }}
