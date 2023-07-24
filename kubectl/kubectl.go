@@ -7,7 +7,6 @@ package kubectl
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"github.com/zcubbs/zrun/bash"
 	apiv1 "k8s.io/api/core/v1"
@@ -61,9 +60,7 @@ func GetClientSet(kubeconfig string) *kubernetes.Clientset {
 func ApplyManifest(manifestTmpl string, data interface{}) error {
 	b, err := ApplyTmpl(manifestTmpl, data)
 	if err != nil {
-		return errors.New(
-			fmt.Sprintf("failed to apply template \n %v", err),
-		)
+		return fmt.Errorf("failed to apply template \n %v", err)
 	}
 
 	// generate tmp file name
@@ -74,24 +71,18 @@ func ApplyManifest(manifestTmpl string, data interface{}) error {
 	// write tmp manifest
 	err = os.WriteFile(fn, b, 0644)
 	if err != nil {
-		return errors.New(
-			fmt.Sprintf("failed to write tmp manifest \n %v", err),
-		)
+		return fmt.Errorf("failed to write tmp manifest \n %v", err)
 	}
 
 	err = bash.ExecuteCmd("kubectl", "apply", "-f", fn)
 	if err != nil {
-		return errors.New(
-			fmt.Sprintf("failed to apply manifest \n %s", err),
-		)
+		return fmt.Errorf("failed to apply manifest \n %s", err)
 	}
 
 	// delete tmp manifest
 	err = os.Remove(fn)
 	if err != nil {
-		return errors.New(
-			fmt.Sprintf("failed to delete tmp manifest \n %v", err),
-		)
+		return fmt.Errorf("failed to delete tmp manifest \n %v", err)
 	}
 	return nil
 }

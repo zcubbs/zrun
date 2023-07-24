@@ -6,7 +6,6 @@ package k3s
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"github.com/zcubbs/zrun/bash"
 	osx "github.com/zcubbs/zrun/os"
 	"io"
@@ -79,19 +78,18 @@ func Install(config Config) error {
 		InstallScript,
 	)
 	if err != nil {
-		return errors.New(fmt.Sprintf("error while running %s \n%v",
+		return fmt.Errorf("error while running %s \n%v",
 			"curl https://get.k3s.io -o k3s-install.sh",
 			err,
-		))
+		)
 	}
 
 	// sh ./k3s-install.sh -s - --write-kubeconfig-mode 644
 	err = os.Chmod("/tmp/k3s-install.sh", 0700)
 	if err != nil {
-		return errors.New(fmt.Sprintf("error while running %s \n%v",
+		return fmt.Errorf("error while running %s \n%v",
 			"chmod 0700 ./tmp/k3s-install.sh -s - --write-kubeconfig-mode 644",
-			err,
-		))
+			err)
 	}
 
 	_, err = bash.ExecuteScript(
@@ -102,10 +100,9 @@ func Install(config Config) error {
 		"--write-kubeconfig-mode=644",
 	)
 	if err != nil {
-		return errors.New(fmt.Sprintf("error while running %s \n%v",
+		return fmt.Errorf("error while running %s \n%v",
 			"./k3s-install.sh -s - --write-kubeconfig-mode 644",
-			err,
-		))
+			err)
 	}
 
 	return nil
