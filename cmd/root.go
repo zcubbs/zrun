@@ -18,6 +18,7 @@ import (
 	"github.com/zcubbs/zrun/cmd/k8s"
 	"github.com/zcubbs/zrun/cmd/k9s"
 	zos "github.com/zcubbs/zrun/cmd/os"
+	"github.com/zcubbs/zrun/cmd/traefik"
 	"github.com/zcubbs/zrun/cmd/vault"
 	"github.com/zcubbs/zrun/defaults"
 	"os"
@@ -72,6 +73,7 @@ func addSubCommandPalettes() {
 	rootCmd.AddCommand(git.Cmd)
 	rootCmd.AddCommand(vault.Cmd)
 	rootCmd.AddCommand(certmanager.Cmd)
+	rootCmd.AddCommand(traefik.Cmd)
 }
 
 func init() {
