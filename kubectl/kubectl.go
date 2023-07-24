@@ -7,6 +7,7 @@ package kubectl
 import (
 	"context"
 	apiv1 "k8s.io/api/core/v1"
+	errosv1 "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -15,14 +16,21 @@ import (
 func CreateNamespace(kubeconfig string, namespace string) error {
 
 	cs := GetClientSet(kubeconfig)
-	nsName := &apiv1.Namespace{
+	ns := &apiv1.Namespace{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Namespace",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: namespace,
+			Labels: map[string]string{
+				"name": namespace,
+			},
 		},
 	}
 
-	_, err := cs.CoreV1().Namespaces().Create(context.Background(), nsName, metav1.CreateOptions{})
-	if err != nil {
+	_, err := cs.CoreV1().Namespaces().Create(context.Background(), ns, metav1.CreateOptions{})
+	if err != nil && !errosv1.IsAlreadyExists(err) {
 		return err
 	}
 

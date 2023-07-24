@@ -28,7 +28,7 @@ func ExecuteCreateNamespaceCmd(kubeconfig, namespace string) {
 		namespace,
 	)
 	if err != nil {
-		println("error:", err.Error())
+		log.Fatalf("couldn't create namespace\n %v", err)
 	}
 }
 

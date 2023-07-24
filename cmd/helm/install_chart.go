@@ -10,6 +10,7 @@ import (
 	"github.com/zcubbs/zrun/cmd/k8s"
 	"github.com/zcubbs/zrun/configs"
 	"github.com/zcubbs/zrun/helm"
+	"helm.sh/helm/v3/pkg/cli/values"
 	"log"
 )
 
@@ -20,7 +21,7 @@ var (
 	chartName    string
 	namespace    string
 	chartVersion string
-	chartValues  map[string]interface{}
+	chartValues  values.Options
 )
 
 // installChart represents the list command
@@ -38,7 +39,7 @@ var installChart = &cobra.Command{
 		fmt.Println("chartName: ", chartName)
 		fmt.Println("namespace: ", namespace)
 		fmt.Println("chartVersion: ", chartVersion)
-		fmt.Println("chartValues: ", chartValues)
+		fmt.Printf("chartValues: %+v", chartValues)
 
 		// Execute Command
 		ExecuteInstallChartCmd(kubeconfig, chartName, repoName, repoUrl, namespace, chartVersion, chartValues)
@@ -47,11 +48,12 @@ var installChart = &cobra.Command{
 }
 
 func init() {
-	installChart.Flags().StringVarP(&repoName, "repo-name", "r", "", "Helm repo name")
-	installChart.Flags().StringVarP(&repoUrl, "repo-url", "u", "", "Helm repo url")
-	installChart.Flags().StringVarP(&chartName, "chart-name", "c", "", "Helm chart name")
-	installChart.Flags().StringVarP(&namespace, "namespace", "n", "", "Helm chart namespace")
-	installChart.Flags().StringVarP(&chartVersion, "chart-version", "v", "", "Helm chart version")
+	installChart.Flags().StringVar(&repoName, "repo-name", "", "helm repo name")
+	installChart.Flags().StringVar(&repoUrl, "repo-url", "", "helm repo url")
+	installChart.Flags().StringVar(&chartName, "chart-name", "", "chart name")
+	installChart.Flags().StringVar(&namespace, "namespace", "", "chart namespace")
+	installChart.Flags().StringVar(&chartVersion, "chart-version", "", "chart version")
+	installChart.Flags().StringArrayVar(&chartValues.Values, "set", nil, "chart values")
 
 	if err := installChart.MarkFlagRequired("repo-name"); err != nil {
 		log.Println(err)
@@ -69,7 +71,7 @@ func init() {
 	Cmd.AddCommand(installChart)
 }
 
-func ExecuteInstallChartCmd(kubeconfig, chartName, repoName, repoUrl, namespace, chartVersion string, chartValues map[string]interface{}) {
+func ExecuteInstallChartCmd(kubeconfig, chartName, repoName, repoUrl, namespace, chartVersion string, chartValues values.Options) {
 	// Add helm repo
 	helm.RepoAdd(repoName, repoUrl)
 	// Update charts from the helm repo

@@ -10,6 +10,7 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
+	helmValues "helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/downloader"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
@@ -21,7 +22,7 @@ import (
 	"time"
 )
 
-func InstallChart(kubeconfig, name, repo, namespace, version, chart string, values map[string]interface{}) {
+func InstallChart(kubeconfig, name, repo, namespace, version, chart string, values helmValues.Options) {
 	var settings = cli.New()
 	settings.KubeConfig = kubeconfig
 	actionConfig := new(action.Configuration)
@@ -64,9 +65,6 @@ func InstallChart(kubeconfig, name, repo, namespace, version, chart string, valu
 	}
 
 	if req := chartRequested.Metadata.Dependencies; req != nil {
-		// If CheckDependencies returns an error, we have unfulfilled dependencies.
-		// As of Helm 2.4.0, this is treated as a stopping condition:
-		// https://github.com/helm/helm/issues/2209
 		if err := action.CheckDependencies(chartRequested, req); err != nil {
 			if client.DependencyUpdate {
 				man := &downloader.Manager{
@@ -86,13 +84,19 @@ func InstallChart(kubeconfig, name, repo, namespace, version, chart string, valu
 			}
 		}
 	}
+	vals, err := values.MergeValues(p)
+	if err != nil {
+		log.Fatal("Failed to merge values: ", err)
+	}
 
 	client.Namespace = namespace
-	release, err := client.Run(chartRequested, values)
+	release, err := client.Run(chartRequested, vals)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to install chart: ", err)
 	}
 	fmt.Println(release.Manifest)
+	fmt.Println(release.Info)
+	fmt.Println(release.Chart.Values)
 }
 
 // RepoAdd adds repo with given name and url

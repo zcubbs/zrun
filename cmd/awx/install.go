@@ -11,6 +11,7 @@ import (
 	"github.com/zcubbs/zrun/bash"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/configs"
+	"helm.sh/helm/v3/pkg/cli/values"
 	"html/template"
 	"log"
 	"os"
@@ -77,7 +78,7 @@ func installOperator() error {
 		"https://ansible.github.io/awx-operator/",
 		"default",
 		"",
-		map[string]interface{}{},
+		values.Options{},
 	)
 
 	return nil
