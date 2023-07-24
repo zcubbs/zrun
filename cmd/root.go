@@ -9,6 +9,7 @@ import (
 	"github.com/common-nighthawk/go-figure"
 	"github.com/spf13/viper"
 	"github.com/zcubbs/zrun/cmd/awx"
+	"github.com/zcubbs/zrun/cmd/certmanager"
 	"github.com/zcubbs/zrun/cmd/config"
 	"github.com/zcubbs/zrun/cmd/git"
 	"github.com/zcubbs/zrun/cmd/helm"
@@ -70,6 +71,7 @@ func addSubCommandPalettes() {
 	rootCmd.AddCommand(k9s.Cmd)
 	rootCmd.AddCommand(git.Cmd)
 	rootCmd.AddCommand(vault.Cmd)
+	rootCmd.AddCommand(certmanager.Cmd)
 }
 
 func init() {

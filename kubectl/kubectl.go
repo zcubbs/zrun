@@ -5,12 +5,19 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package kubectl
 
 import (
+	"bytes"
 	"context"
+	"errors"
+	"fmt"
+	"github.com/zcubbs/zrun/bash"
 	apiv1 "k8s.io/api/core/v1"
 	errosv1 "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"os"
+	"text/template"
+	"time"
 )
 
 func CreateNamespace(kubeconfig string, namespace string) error {
@@ -49,4 +56,57 @@ func GetClientSet(kubeconfig string) *kubernetes.Clientset {
 	}
 
 	return cs
+}
+
+func ApplyManifest(manifestTmpl string, data interface{}) error {
+	b, err := ApplyTmpl(manifestTmpl, data)
+	if err != nil {
+		return errors.New(
+			fmt.Sprintf("failed to apply template \n %v", err),
+		)
+	}
+
+	// generate tmp file name
+	fn := fmt.Sprintf("/tmp/tmpManifest_%s.yaml",
+		time.Unix(time.Now().Unix(), 0).Format("20060102150405"),
+	)
+
+	// write tmp manifest
+	err = os.WriteFile(fn, b, 0644)
+	if err != nil {
+		return errors.New(
+			fmt.Sprintf("failed to write tmp manifest \n %v", err),
+		)
+	}
+
+	err = bash.ExecuteCmd("kubectl", "apply", "-f", fn)
+	if err != nil {
+		return errors.New(
+			fmt.Sprintf("failed to apply manifest \n %s", err),
+		)
+	}
+
+	// delete tmp manifest
+	err = os.Remove(fn)
+	if err != nil {
+		return errors.New(
+			fmt.Sprintf("failed to delete tmp manifest \n %v", err),
+		)
+	}
+	return nil
+}
+
+func ApplyTmpl(tmplStr string, tmplData interface{}) ([]byte, error) {
+	tmpl, err := template.New("tmpManifest").Parse(tmplStr)
+	if err != nil {
+		return nil, err
+	}
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, tmplData); err != nil {
+		return nil, err
+	}
+
+	fmt.Println(buf.String())
+
+	return buf.Bytes(), nil
 }
