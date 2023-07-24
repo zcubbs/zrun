@@ -26,19 +26,21 @@ spec:
     solvers:
       - http01:
           ingress:
-            class: cert-manager-resolver
+            class: {{ .IngressClassResolver }}
 `
 
 type Issuer struct {
-	IssuerName   string
-	IssuerEmail  string
-	IssuerServer string
+	IssuerName           string
+	IssuerEmail          string
+	IssuerServer         string
+	IngressClassResolver string
 }
 
 var (
-	issuerName   string
-	issuerEmail  string
-	issuerServer string
+	issuerName           string
+	issuerEmail          string
+	issuerServer         string
+	ingressClassResolver string
 )
 
 // issuer represents the list command
@@ -48,9 +50,10 @@ var issuer = &cobra.Command{
 	Long:  `setup cert-manager issuer. Note: currently only supports letsencrypt`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := kubectl.ApplyManifest(letsEncryptIssuerTmpl, Issuer{
-			IssuerName:   issuerName,
-			IssuerEmail:  issuerEmail,
-			IssuerServer: issuerServer,
+			IssuerName:           issuerName,
+			IssuerEmail:          issuerEmail,
+			IssuerServer:         issuerServer,
+			IngressClassResolver: ingressClassResolver,
 		})
 		if err != nil {
 			log.Fatal(err)
@@ -63,6 +66,7 @@ func init() {
 	issuer.Flags().StringVar(&issuerName, "name", "", "issuer name")
 	issuer.Flags().StringVar(&issuerEmail, "email", "", "issuer email")
 	issuer.Flags().StringVar(&issuerServer, "server", "", "issuer server")
+	issuer.Flags().StringVar(&ingressClassResolver, "ingress-class-resolver", "cert-manager-resolver", "ingress class resolver")
 
 	if err := issuer.MarkFlagRequired("name"); err != nil {
 		log.Println(err)
