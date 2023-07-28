@@ -11,6 +11,7 @@ import (
 	"github.com/zcubbs/zrun/bash"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/configs"
+	helmPkg "github.com/zcubbs/zrun/helm"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"html/template"
 	"log"
@@ -71,15 +72,18 @@ stringData:
 func installOperator() error {
 	fmt.Println("installing awx operator")
 	kubeconfig := configs.Config.Kubeconfig.Path
-	helm.ExecuteInstallChartCmd(
-		kubeconfig,
-		"awx-operator",
-		"awx-operator",
-		"https://ansible.github.io/awx-operator/",
-		"default",
-		"",
-		values.Options{},
-	)
+	verbose := Cmd.Flag("verbose").Value.String() == "true"
+
+	helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
+		Kubeconfig:   kubeconfig,
+		RepoName:     "awx-operator",
+		RepoUrl:      "https://ansible.github.io/awx-operator/",
+		ChartName:    "awx-operator",
+		Namespace:    "default",
+		ChartVersion: "",
+		ChartValues:  values.Options{},
+		Debug:        verbose,
+	})
 
 	return nil
 }

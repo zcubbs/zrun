@@ -42,8 +42,17 @@ var installChart = &cobra.Command{
 		fmt.Printf("chartValues: %+v", chartValues)
 
 		// Execute Command
-		ExecuteInstallChartCmd(kubeconfig, chartName, repoName, repoUrl, namespace, chartVersion, chartValues)
-
+		verbose := Cmd.Flag("verbose").Value.String() == "true"
+		ExecuteInstallChartCmd(helm.InstallChartOptions{
+			Kubeconfig:   kubeconfig,
+			RepoName:     repoName,
+			RepoUrl:      repoUrl,
+			ChartName:    chartName,
+			Namespace:    namespace,
+			ChartVersion: chartVersion,
+			ChartValues:  chartValues,
+			Debug:        verbose,
+		})
 	},
 }
 
@@ -71,15 +80,15 @@ func init() {
 	Cmd.AddCommand(installChart)
 }
 
-func ExecuteInstallChartCmd(kubeconfig, chartName, repoName, repoUrl, namespace, chartVersion string, chartValues values.Options) {
+func ExecuteInstallChartCmd(options helm.InstallChartOptions) {
 	// Add helm repo
-	helm.RepoAdd(repoName, repoUrl)
+	helm.RepoAdd(options.RepoName, options.RepoUrl)
 	// Update charts from the helm repo
 	helm.RepoUpdate()
 	// Create Namespace
-	k8s.ExecuteCreateNamespaceCmd(kubeconfig, namespace)
+	k8s.ExecuteCreateNamespaceCmd(options.Kubeconfig, options.Namespace)
 	// Install charts
-	helm.InstallChart(kubeconfig, chartName, repoName, namespace, chartVersion, chartName, chartValues)
+	helm.InstallChart(options)
 	// List helm releases
 	ExecuteHelmListCmd()
 }

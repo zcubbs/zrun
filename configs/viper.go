@@ -40,6 +40,8 @@ var allowedEnvVarKeys = []string{
 	"k3s.version",
 	"debug.enabled",
 	"kubeconfig.path",
+	"vault.path",
+	"vault.key",
 }
 
 func getUserHomePath() string {

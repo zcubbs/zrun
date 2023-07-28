@@ -57,7 +57,7 @@ func GetClientSet(kubeconfig string) *kubernetes.Clientset {
 	return cs
 }
 
-func ApplyManifest(manifestTmpl string, data interface{}) error {
+func ApplyManifest(manifestTmpl string, data interface{}, debug bool) error {
 	b, err := ApplyTmpl(manifestTmpl, data)
 	if err != nil {
 		return fmt.Errorf("failed to apply template \n %v", err)
@@ -68,10 +68,12 @@ func ApplyManifest(manifestTmpl string, data interface{}) error {
 		time.Unix(time.Now().Unix(), 0).Format("20060102150405"),
 	)
 
-	// write tmp manifest
-	err = os.WriteFile(fn, b, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to write tmp manifest \n %v", err)
+	if debug {
+		// write tmp manifest
+		err = os.WriteFile(fn, b, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write tmp manifest \n %v", err)
+		}
 	}
 
 	err = bash.ExecuteCmd("kubectl", "apply", "-f", fn)

@@ -7,7 +7,9 @@ package cmd
 import (
 	"fmt"
 	"github.com/common-nighthawk/go-figure"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/zcubbs/zrun/cmd/argo"
 	"github.com/zcubbs/zrun/cmd/awx"
 	"github.com/zcubbs/zrun/cmd/certmanager"
 	"github.com/zcubbs/zrun/cmd/config"
@@ -22,8 +24,6 @@ import (
 	"github.com/zcubbs/zrun/cmd/vault"
 	"github.com/zcubbs/zrun/defaults"
 	"os"
-
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -74,9 +74,12 @@ func addSubCommandPalettes() {
 	rootCmd.AddCommand(vault.Cmd)
 	rootCmd.AddCommand(certmanager.Cmd)
 	rootCmd.AddCommand(traefik.Cmd)
+	rootCmd.AddCommand(argo.Cmd)
 }
 
 func init() {
+	// add verbose flag
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
 	rootCmd.AddCommand(aboutCmd)
 	rootCmd.AddCommand(viperCommand)
 	addSubCommandPalettes()

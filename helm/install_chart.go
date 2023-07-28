@@ -26,11 +26,22 @@ import (
 	"time"
 )
 
-func InstallChart(kubeconfig, name, repo, namespace, version, chart string, values helmValues.Options) {
+type InstallChartOptions struct {
+	Kubeconfig   string
+	RepoName     string
+	RepoUrl      string
+	ChartName    string
+	Namespace    string
+	ChartVersion string
+	ChartValues  helmValues.Options
+	Debug        bool
+}
+
+func InstallChart(options InstallChartOptions) {
 	var settings = cli.New()
-	settings.KubeConfig = kubeconfig
+	settings.KubeConfig = options.Kubeconfig
 	actionConfig := new(action.Configuration)
-	if err := actionConfig.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), debug); err != nil {
+	if err := actionConfig.Init(settings.RESTClientGetter(), options.Namespace, os.Getenv("HELM_DRIVER"), debug); err != nil {
 		log.Fatal(err)
 	}
 
@@ -38,8 +49,8 @@ func InstallChart(kubeconfig, name, repo, namespace, version, chart string, valu
 
 	client.CreateNamespace = true
 
-	if version != "" {
-		client.Version = version
+	if options.ChartVersion != "" {
+		client.Version = options.ChartVersion
 	}
 
 	if client.Version == "" && client.Devel {
@@ -47,13 +58,19 @@ func InstallChart(kubeconfig, name, repo, namespace, version, chart string, valu
 	}
 
 	//name, chart, err := client.NameAndChart(args)
-	client.ReleaseName = name
-	cp, err := client.ChartPathOptions.LocateChart(fmt.Sprintf("%s/%s", repo, chart), settings)
+	client.ReleaseName = options.ChartName
+	cp, err := client.ChartPathOptions.LocateChart(
+		fmt.Sprintf("%s/%s",
+			options.RepoName,
+			options.ChartName),
+		settings)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	debug("CHART PATH: %s\n", cp)
+	if options.Debug {
+		debug("CHART PATH: %s\n", cp)
+	}
 
 	p := getter.All(settings)
 
@@ -69,38 +86,50 @@ func InstallChart(kubeconfig, name, repo, namespace, version, chart string, valu
 	}
 
 	if req := chartRequested.Metadata.Dependencies; req != nil {
-		if err := action.CheckDependencies(chartRequested, req); err != nil {
-			if client.DependencyUpdate {
-				man := &downloader.Manager{
-					Out:              os.Stdout,
-					ChartPath:        cp,
-					Keyring:          client.ChartPathOptions.Keyring,
-					SkipUpdate:       false,
-					Getters:          p,
-					RepositoryConfig: settings.RepositoryConfig,
-					RepositoryCache:  settings.RepositoryCache,
-				}
-				if err := man.Update(); err != nil {
-					log.Fatal(err)
-				}
-			} else {
-				log.Fatal(err)
-			}
-		}
+		checkDependencies(client, settings, chartRequested, req, cp, p)
 	}
-	vals, err := values.MergeValues(p)
+	vals, err := options.ChartValues.MergeValues(p)
 	if err != nil {
 		log.Fatal("Failed to merge values: ", err)
 	}
 
-	client.Namespace = namespace
+	client.Namespace = options.Namespace
 	release, err := client.Run(chartRequested, vals)
 	if err != nil {
 		log.Fatal("Failed to install chart: ", err)
 	}
-	fmt.Println(release.Manifest)
-	fmt.Println(release.Info)
-	fmt.Println(release.Chart.Values)
+
+	if options.Debug {
+		fmt.Println(release.Manifest)
+		fmt.Println(release.Info)
+		fmt.Println(release.Chart.Values)
+	}
+}
+
+func checkDependencies(client *action.Install,
+	settings *cli.EnvSettings,
+	ch *chart.Chart,
+	reqs []*chart.Dependency,
+	cp string,
+	p getter.Providers) {
+	if err := action.CheckDependencies(ch, reqs); err != nil {
+		if client.DependencyUpdate {
+			man := &downloader.Manager{
+				Out:              os.Stdout,
+				ChartPath:        cp,
+				Keyring:          client.ChartPathOptions.Keyring,
+				SkipUpdate:       false,
+				Getters:          p,
+				RepositoryConfig: settings.RepositoryConfig,
+				RepositoryCache:  settings.RepositoryCache,
+			}
+			if err := man.Update(); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			log.Fatal(err)
+		}
+	}
 }
 
 // RepoAdd adds repo with given name and url

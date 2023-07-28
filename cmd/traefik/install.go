@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/configs"
+	helmPkg "github.com/zcubbs/zrun/helm"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"log"
 )
@@ -97,15 +98,18 @@ func installChart() error {
 
 	options.Values = append(options.Values, addAdditionalArgs(additionalArgs)...)
 
-	helm.ExecuteInstallChartCmd(
-		kubeconfig,
-		"traefik",
-		"traefik",
-		"https://helm.traefik.io/traefik",
-		"traefik",
-		chartVersion,
-		options,
-	)
+	verbose := Cmd.Flag("verbose").Value.String() == "true"
+
+	helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
+		Kubeconfig:   kubeconfig,
+		RepoName:     "traefik",
+		RepoUrl:      "https://helm.traefik.io/traefik",
+		ChartName:    "traefik",
+		Namespace:    "traefik",
+		ChartVersion: chartVersion,
+		ChartValues:  options,
+		Debug:        verbose,
+	})
 
 	return nil
 }

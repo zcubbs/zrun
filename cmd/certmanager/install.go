@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/configs"
+	helmPkg "github.com/zcubbs/zrun/helm"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"k8s.io/utils/strings/slices"
 	"log"
@@ -42,15 +43,18 @@ func installChart() error {
 		options.Values = append(options.Values, "installCRDs=true")
 	}
 
-	helm.ExecuteInstallChartCmd(
-		kubeconfig,
-		"cert-manager",
-		"jetstack",
-		"https://charts.jetstack.io",
-		"cert-manager",
-		chartVersion,
-		options,
-	)
+	verbose := Cmd.Flag("verbose").Value.String() == "true"
+
+	helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
+		Kubeconfig:   kubeconfig,
+		RepoName:     "cert-manager",
+		RepoUrl:      "jetstack",
+		ChartName:    "https://charts.jetstack.io",
+		Namespace:    "cert-manager",
+		ChartVersion: chartVersion,
+		ChartValues:  options,
+		Debug:        verbose,
+	})
 
 	return nil
 }

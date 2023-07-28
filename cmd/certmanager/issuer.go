@@ -49,12 +49,13 @@ var issuer = &cobra.Command{
 	Short: "setup cert-manager issuer",
 	Long:  `setup cert-manager issuer. Note: currently only supports letsencrypt`,
 	Run: func(cmd *cobra.Command, args []string) {
+		verbose := Cmd.Flag("verbose").Value.String() == "true"
 		err := kubectl.ApplyManifest(letsEncryptIssuerTmpl, Issuer{
 			IssuerName:           issuerName,
 			IssuerEmail:          issuerEmail,
 			IssuerServer:         issuerServer,
 			IngressClassResolver: ingressClassResolver,
-		})
+		}, verbose)
 		if err != nil {
 			log.Fatal(err)
 		}
