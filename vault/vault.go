@@ -11,17 +11,16 @@ import (
 	"crypto/rand"
 	"encoding/gob"
 	"errors"
-	"golang.org/x/crypto/bcrypt"
+	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"sync"
 )
 
 // Secret struct will hold the data for our secret
 type Secret struct {
-	key  string
-	hash []byte
+	Key   string
+	Value string
 }
 
 // SecretVault struct will hold our secrets in memory
@@ -31,25 +30,20 @@ type SecretVault struct {
 }
 
 // AddSecret is a function to add a secret to our SecretVault
-func (s *SecretVault) AddSecret(key, password string) error {
+func (s *SecretVault) AddSecret(key, value string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-
 	s.secrets[key] = Secret{
-		key:  key,
-		hash: hash,
+		Key:   key,
+		Value: value,
 	}
 
 	return nil
 }
 
 // GetSecret is a function to get a secret from our SecretVault
-func (s *SecretVault) GetSecret(key, password string) (string, error) {
+func (s *SecretVault) GetSecret(key string) (string, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -58,12 +52,7 @@ func (s *SecretVault) GetSecret(key, password string) (string, error) {
 		return "", errors.New("no secret found with that key")
 	}
 
-	err := bcrypt.CompareHashAndPassword(secret.hash, []byte(password))
-	if err != nil {
-		return "", errors.New("invalid password for secret")
-	}
-
-	return secret.key, nil
+	return secret.Value, nil
 }
 
 // NewSecretVault reads data from the file and decrypts it if exists
@@ -78,26 +67,53 @@ func NewSecretVault() (*SecretVault, error) {
 		return nil, errors.New("missing VAULT_FILE or VAULT_KEY env variable")
 	}
 
-	encrypted, err := ioutil.ReadFile(filename)
+	encrypted, err := os.ReadFile(filename)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			// If the file does not exist, return the new empty vault
 			return v, nil
 		}
-		return nil, err
+		return nil, fmt.Errorf("error reading vault file: %w", err)
 	}
 
 	data, err := decrypt(encrypted, []byte(key))
 	if err != nil {
-		return nil, err
+		return nil,
+			fmt.Errorf("error decrypting vault: %w", err)
 	}
 
 	err = gob.NewDecoder(bytes.NewReader(data)).Decode(&v.secrets)
 	if err != nil {
-		return nil, err
+		return nil,
+			fmt.Errorf("error decoding vault: %w", err)
 	}
 
 	return v, nil
+}
+
+func InitializeVaultWithRandomKey(filename string) (*SecretVault, error) {
+	key := make([]byte, 32)
+	_, err := rand.Read(key)
+	if err != nil {
+		return nil,
+			fmt.Errorf("error reading key from random source: %w", err)
+	}
+
+	// convert key to hex string
+	//keyStr := hex.EncodeToString(key)
+
+	// set environment variables
+	err = os.Setenv("VAULT_FILE", filename)
+	if err != nil {
+		return nil, err
+	}
+	err = os.Setenv("VAULT_KEY", string(key))
+	if err != nil {
+		return nil, err
+	}
+
+	// return new SecretVault
+	return NewSecretVault()
 }
 
 func (s *SecretVault) Save() error {
@@ -115,7 +131,7 @@ func (s *SecretVault) Save() error {
 		return err
 	}
 
-	return ioutil.WriteFile(filename, encrypted, 0600)
+	return os.WriteFile(filename, encrypted, 0600)
 }
 
 // Helper functions for encryption and decryption

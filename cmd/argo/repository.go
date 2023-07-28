@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/kubectl"
+	zvault "github.com/zcubbs/zrun/vault"
 	"os"
 	"strings"
 )
@@ -90,8 +91,24 @@ func handleCredentials() error {
 		if repositoryPassword == "" {
 			return fmt.Errorf("error: password vault key is empty")
 		}
-		// get credentials from vault
-		// TODO: implement vault
+
+		// get username and password from vault
+		sv, err := zvault.NewSecretVault()
+		if err != nil {
+			return err
+		}
+
+		repositoryPassword, err = sv.GetSecret(repositoryPassword)
+		if err != nil {
+			return err
+		}
+
+		repositoryUsername, err = sv.GetSecret(repositoryUsername)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	// check if use env vars

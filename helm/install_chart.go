@@ -42,7 +42,8 @@ func InstallChart(options InstallChartOptions) {
 	settings.KubeConfig = options.Kubeconfig
 	actionConfig := new(action.Configuration)
 	if err := actionConfig.Init(settings.RESTClientGetter(), options.Namespace, os.Getenv("HELM_DRIVER"), debug); err != nil {
-		log.Fatal(err)
+		log.Fatal(
+			fmt.Errorf("failed to init action config. %s", err))
 	}
 
 	client := action.NewInstall(actionConfig)
