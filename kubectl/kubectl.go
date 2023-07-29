@@ -76,7 +76,7 @@ func ApplyManifest(manifestTmpl string, data interface{}, debug bool) error {
 		}
 	}
 
-	err = bash.ExecuteCmd("kubectl", "apply", "-f", fn)
+	err = bash.ExecuteCmd("kubectl", debug, "apply", "-f", fn)
 	if err != nil {
 		return fmt.Errorf("failed to apply manifest \n %s", err)
 	}

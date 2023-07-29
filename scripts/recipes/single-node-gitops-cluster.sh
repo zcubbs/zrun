@@ -5,10 +5,10 @@ echo "-------------------------------------------"
 echo "Installing zrun"
 go build -o ./bin/zrun
 cp ./bin/zrun /usr/local/bin/zrun
-zrun about
+#zrun about
 
 echo "-------------------------------------------"
-echo "Bootstrapping environment"
+echo "Bootstrapping environment..."
 
 zrun_info() {
     zrun info disk
@@ -23,17 +23,15 @@ k3s_install() {
 
 k9s_install() {
     sudo zrun k9s install || { echo "k9s installation failed"; exit 1; }
-    k9s version
 }
 
 helm_install() {
     sudo zrun helm install-helm || { echo "Helm installation failed"; exit 1; }
-    helm version
 }
 
 cert_manager_install() {
-    sudo zrun certmanager install -v \
-        || { echo "Cert-Manager installation failed"; exit 1; }
+    sudo zrun certmanager install \
+        || { echo "cert-manager installation failed"; exit 1; }
 }
 
 traefik_install() {
@@ -43,27 +41,45 @@ traefik_install() {
         --proxy \
         --forwardedHeaders \
         --ingressProvider "cert-manager-resolver" \
-        || { echo "Traefik installation failed"; exit 1; }
+        || { echo "traefik installation failed"; exit 1; }
 }
 
 helm_install_argocd_chart() {
-    sudo zrun helm install-chart \
-        --repo-name "argo-cd" \
-        --repo-url "https://argoproj.github.io/argo-helm" \
-        --chart-name "argo-cd" \
-        --namespace "argo-cd" \
-        --chart-version "5.41.1" || { echo "ArgoCD installation failed"; exit 1; }
+    sudo zrun argo install \
+        || { echo "argocd installation failed"; exit 1; }
+}
+
+argocd_add_project() {
+    sudo zrun argocd add-project \
+        --name "default" \
+        --upsert || { echo "argocd project creation failed"; exit 1; }
+}
+
+# values "argo-git-repo-username" and "argo-git-repo-password" are stored in vault
+# and are used to authenticate to the git repo
+# to add a secret to vault, run the following command:
+# sudo zrun vault add --key "argo-git-repo-username" --val "username"
+argocd_add_repos() {
+    sudo zrun argocd add-repo \
+        --name "gitops" \
+        --url "https://github.com/zcubbs/zrun-gitops-test-repo" \
+        --type "git" \
+        --use-vault \
+        --username "argo-git-repo-username" \
+        --password "argo-git-repo-password" \
+        || { echo "argocd repo creation failed"; exit 1; }
+
 }
 
 wait_for_cluster() {
     echo "-------------------------------------------"
-    echo "Waiting for Cluster to be ready..."
+    echo "waiting for Cluster to be ready..."
     until kubectl get nodes; do sleep 1; done
 }
 
 wait_for_argocd() {
     echo "-------------------------------------------"
-    echo "Waiting for ArgoCD to be ready..."
+    echo "waiting for ArgoCD to be ready..."
     until kubectl -n argo-cd get pods | grep Running; do sleep 1; done
 }
 
@@ -72,7 +88,7 @@ run_k9s() {
 }
 
 main() {
-    zrun_info
+#    zrun_info
     k3s_install
     k9s_install
     helm_install

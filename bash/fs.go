@@ -6,29 +6,35 @@ package bash
 
 import (
 	"fmt"
-	"log"
 	"os"
 )
 
-func Chmod(path string, perm os.FileMode) error {
+func Chmod(path string, perm os.FileMode, debug bool) error {
 	if perm == 0 {
 		perm = 0755
 	}
 	stats, err := os.Stat(path)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("error getting file stats: %s", err)
 	}
-	fmt.Printf("File permissions before: %s\n", stats.Mode())
+
+	if debug {
+		fmt.Printf("File permissions before: %s\n", stats.Mode())
+	}
+
 	err = os.Chmod(path, perm)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("error changing file permissions: %s", err)
 	}
 
 	stats, err = os.Stat(path)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("error getting file stats: %s", err)
 	}
-	fmt.Printf("File permissions after: %s\n", stats.Mode())
+
+	if debug {
+		fmt.Printf("File permissions after: %s\n", stats.Mode())
+	}
 
 	return nil
 }
@@ -64,7 +70,7 @@ func DirExists(path string) bool {
 
 func ExtractTarGz(tarPath string, destPath string) error {
 	// tar -zxvf <tarPath> -C <destPath>
-	err := ExecuteCmd("tar", "-zxvf", tarPath, "-C", destPath)
+	err := ExecuteCmd("tar", true, "-zxvf", tarPath, "-C", destPath)
 	if err != nil {
 		fmt.Println("Error extracting tar.gz file: ", tarPath, err)
 		return err
@@ -73,12 +79,11 @@ func ExtractTarGz(tarPath string, destPath string) error {
 	return nil
 }
 
-func ExtractTarGzWithFile(tarPath string, file string, destPath string) error {
+func ExtractTarGzWithFile(tarPath string, file string, destPath string, debug bool) error {
 	// tar -zxvf <tarPath> -C <destPath>
-	err := ExecuteCmd("tar", "-zxvf", tarPath, "-C", destPath, file)
+	err := ExecuteCmd("tar", debug, "-zxvf", tarPath, "-C", destPath, file)
 	if err != nil {
-		fmt.Println("Error extracting tar.gz file: ", tarPath, err)
-		return err
+		return fmt.Errorf("error extracting tar.gz file: %s\n%w", tarPath, err)
 	}
 
 	return nil

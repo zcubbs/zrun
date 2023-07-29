@@ -5,10 +5,10 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package helm
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/configs"
 	"github.com/zcubbs/zrun/helm"
-	"log"
 	"os"
 )
 
@@ -20,14 +20,15 @@ var uninstallChart = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := os.UserHomeDir()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 		kubeconfig = configs.Config.Kubeconfig.Path
 		// Install charts
-		helm.UninstallChart(kubeconfig, chartName, namespace)
-
+		err = helm.UninstallChart(kubeconfig, chartName, namespace)
 		if err != nil {
-			log.Fatal("Could not uninstall helm release", err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	},
 }
@@ -37,10 +38,10 @@ func init() {
 	uninstallChart.Flags().StringVarP(&namespace, "namespace", "n", "", "Helm chart namespace")
 
 	if err := uninstallChart.MarkFlagRequired("chart-name"); err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 	if err := uninstallChart.MarkFlagRequired("namespace"); err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 
 	Cmd.AddCommand(uninstallChart)

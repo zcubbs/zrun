@@ -5,17 +5,15 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package awx
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/bash"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/configs"
 	helmPkg "github.com/zcubbs/zrun/helm"
+	"github.com/zcubbs/zrun/kubectl"
+	"github.com/zcubbs/zrun/util"
 	"helm.sh/helm/v3/pkg/cli/values"
-	"html/template"
-	"log"
-	"os"
 )
 
 // upgrade represents the list command
@@ -24,20 +22,10 @@ var install = &cobra.Command{
 	Short: "install awx",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := installOperator()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = deployInstance(instanceTmpl, secretTmpl)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = configureAwx()
-		if err != nil {
-			log.Fatal(err)
-		}
+		verbose := cmd.Flag("verbose").Value.String() == "true"
+		util.Must(installOperator(verbose))
+		util.Must(deployInstance(instanceTmpl, secretTmpl, verbose))
+		util.Must(configureAwx(verbose))
 	},
 }
 
@@ -69,12 +57,10 @@ stringData:
   password: {{ .Password }}
 `
 
-func installOperator() error {
-	fmt.Println("installing awx operator")
+func installOperator(verbose bool) error {
 	kubeconfig := configs.Config.Kubeconfig.Path
-	verbose := Cmd.Flag("verbose").Value.String() == "true"
 
-	helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
+	err := helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
 		Kubeconfig:   kubeconfig,
 		RepoName:     "awx-operator",
 		RepoUrl:      "https://ansible.github.io/awx-operator/",
@@ -84,11 +70,14 @@ func installOperator() error {
 		ChartValues:  values.Options{},
 		Debug:        verbose,
 	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func deployInstance(instanceTmplStr, secretTmplStr string) error {
+func deployInstance(instanceTmplStr, secretTmplStr string, verbose bool) error {
 	fmt.Println("deploying awx instance")
 	var tmplData = map[string]string{
 		"Namespace":    "default",
@@ -96,17 +85,18 @@ func deployInstance(instanceTmplStr, secretTmplStr string) error {
 		"Password":     "admin",
 	}
 
-	err := applyTmpl(instanceTmplStr, tmplData)
+	err := kubectl.ApplyManifest(instanceTmplStr, tmplData, false)
 	if err != nil {
 		return err
 	}
 
-	err = applyTmpl(secretTmplStr, tmplData)
+	err = kubectl.ApplyManifest(secretTmplStr, tmplData, false)
 	if err != nil {
 		return err
 	}
 
 	err = bash.ExecuteCmd("kubectl",
+		verbose,
 		"get",
 		"secret",
 		"awx-admin-password",
@@ -114,36 +104,11 @@ func deployInstance(instanceTmplStr, secretTmplStr string) error {
 		"jsonpath=\"{.data.password}\" | base64 --decode ; echo",
 	)
 	if err != nil {
-		fmt.Println("failed to get awx admin password")
-		return err
+		return fmt.Errorf("failed to get awx admin password: %w", err)
 	}
 	return nil
 }
 
-func configureAwx() error {
-	return nil
-}
-
-func applyTmpl(tmplStr string, tmplData map[string]string) error {
-	tmpl, err := template.New("tmpManifest").Parse(tmplStr)
-	if err != nil {
-		return err
-	}
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, tmplData); err != nil {
-		return err
-	}
-
-	fmt.Println(buf.String())
-
-	err = os.WriteFile("/tmp/tmpManifest.yaml", buf.Bytes(), 0644)
-	if err != nil {
-		return err
-	}
-
-	err = bash.ExecuteCmd("kubectl", "apply", "-f", "/tmp/tmpManifest.yaml")
-	if err != nil {
-		return err
-	}
+func configureAwx(verbose bool) error {
 	return nil
 }

@@ -12,12 +12,15 @@ import (
 	"runtime"
 )
 
-func InstallK9s() error {
-	fmt.Println("Installing k9s...")
-	fmt.Printf("Arch: %s_%s\n", runtime.GOOS, runtime.GOARCH)
+func InstallK9s(debug bool) error {
+	if debug {
+		fmt.Printf("Arch: %s_%s\n", runtime.GOOS, runtime.GOARCH)
+	}
+
 	// wget -O /tmp/k9s.tar.gz https://github.com/derailed/k9s/releases/download/v0.27.3/k9s_Linux_amd64.tar.gz
 	err := bash.ExecuteCmd(
 		"wget",
+		debug,
 		"-O",
 		"/tmp/k9s.tar.gz",
 		fmt.Sprintf("https://github.com/derailed/k9s/releases/download/v0.27.3/k9s_%s_%s.tar.gz",
@@ -30,7 +33,7 @@ func InstallK9s() error {
 	}
 
 	// tar -xvf k9s.tar.gz
-	err = bash.ExtractTarGzWithFile("/tmp/k9s.tar.gz", "k9s", "/tmp")
+	err = bash.ExtractTarGzWithFile("/tmp/k9s.tar.gz", "k9s", "/tmp", debug)
 	if err != nil {
 		return err
 	}
@@ -38,6 +41,7 @@ func InstallK9s() error {
 	// mv /tmp/k9s /usr/local/bin/k9s
 	err = bash.ExecuteCmd(
 		"mv",
+		debug,
 		"/tmp/k9s",
 		"/usr/local/bin/k9s",
 	)
@@ -46,9 +50,9 @@ func InstallK9s() error {
 	}
 
 	// chmod +x /usr/local/bin/k9s
-	err = bash.Chmod("/usr/local/bin/k9s", 0700)
+	err = bash.Chmod("/usr/local/bin/k9s", 0700, debug)
 	if err != nil {
-		return err
+		return fmt.Errorf("chmod /usr/local/bin/k9s: %w", err)
 	}
 
 	return nil

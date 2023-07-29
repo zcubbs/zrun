@@ -37,13 +37,12 @@ type InstallChartOptions struct {
 	Debug        bool
 }
 
-func InstallChart(options InstallChartOptions) {
+func InstallChart(options InstallChartOptions) error {
 	var settings = cli.New()
 	settings.KubeConfig = options.Kubeconfig
 	actionConfig := new(action.Configuration)
 	if err := actionConfig.Init(settings.RESTClientGetter(), options.Namespace, os.Getenv("HELM_DRIVER"), debug); err != nil {
-		log.Fatal(
-			fmt.Errorf("failed to init action config. %s", err))
+		return fmt.Errorf("failed to init action config. %s", err)
 	}
 
 	client := action.NewInstall(actionConfig)
@@ -66,7 +65,7 @@ func InstallChart(options InstallChartOptions) {
 			options.ChartName),
 		settings)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to locate chart. %s", err)
 	}
 
 	if options.Debug {
@@ -78,26 +77,33 @@ func InstallChart(options InstallChartOptions) {
 	// Check chart dependencies to make sure all are present in /charts
 	chartRequested, err := loader.Load(cp)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to load chart. %s", err)
 	}
 
 	validInstallableChart, err := isChartInstallable(chartRequested)
 	if !validInstallableChart {
-		log.Fatal(err)
+		return fmt.Errorf("chart %s is not installable. %s", chartRequested.Name(), err)
 	}
 
 	if req := chartRequested.Metadata.Dependencies; req != nil {
-		checkDependencies(client, settings, chartRequested, req, cp, p)
+		err = checkDependencies(client, settings, chartRequested, req, cp, p)
+		if err != nil {
+			return err
+		}
 	}
 	vals, err := options.ChartValues.MergeValues(p)
 	if err != nil {
-		log.Fatal("Failed to merge values: ", err)
+		return fmt.Errorf("failed to merge values: %w", err)
 	}
 
 	client.Namespace = options.Namespace
 	release, err := client.Run(chartRequested, vals)
 	if err != nil {
-		log.Fatal("Failed to install chart: ", err)
+		if err.Error() == "cannot re-use a name that is still in use" && options.Debug {
+			fmt.Println("warning: chart release name already exists, no action taken!")
+			return nil
+		}
+		return fmt.Errorf("failed to install chart: %w", err)
 	}
 
 	if options.Debug {
@@ -105,6 +111,8 @@ func InstallChart(options InstallChartOptions) {
 		fmt.Println(release.Info)
 		fmt.Println(release.Chart.Values)
 	}
+
+	return nil
 }
 
 func checkDependencies(client *action.Install,
@@ -112,7 +120,7 @@ func checkDependencies(client *action.Install,
 	ch *chart.Chart,
 	reqs []*chart.Dependency,
 	cp string,
-	p getter.Providers) {
+	p getter.Providers) error {
 	if err := action.CheckDependencies(ch, reqs); err != nil {
 		if client.DependencyUpdate {
 			man := &downloader.Manager{
@@ -125,16 +133,18 @@ func checkDependencies(client *action.Install,
 				RepositoryCache:  settings.RepositoryCache,
 			}
 			if err := man.Update(); err != nil {
-				log.Fatal(err)
+				return fmt.Errorf("failed to update the chart dependencies: %w", err)
 			}
 		} else {
-			log.Fatal(err)
+			return fmt.Errorf("chart dependencies are not satisfied: %w", err)
 		}
 	}
+
+	return nil
 }
 
 // RepoAdd adds repo with given name and url
-func RepoAdd(name, url string) {
+func RepoAdd(name, url string, debug bool) error {
 	var settings = cli.New()
 	repoFile := settings.RepositoryConfig
 	repoFile = filepath.Clean(repoFile)
@@ -142,7 +152,7 @@ func RepoAdd(name, url string) {
 	//Ensure the file directory exists as it is required for file locking
 	err := os.MkdirAll(filepath.Dir(repoFile), os.ModePerm)
 	if err != nil && !os.IsExist(err) {
-		log.Fatal(err)
+		return fmt.Errorf("failed to create directory %s. %s", filepath.Dir(repoFile), err)
 	}
 
 	// Acquire a file lock for process synchronization
@@ -154,27 +164,26 @@ func RepoAdd(name, url string) {
 		defer func(fileLock *flock.Flock) {
 			err := fileLock.Unlock()
 			if err != nil {
-				log.Fatal(err)
+				panic(fmt.Errorf("failed to unlock file %s. %s", repoFile, err))
 			}
 		}(fileLock)
 	}
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to lock file %s. %s", repoFile, err)
 	}
 
 	b, err := os.ReadFile(repoFile)
 	if err != nil && !os.IsNotExist(err) {
-		log.Fatal(err)
+		return fmt.Errorf("failed to read file %s. %s", repoFile, err)
 	}
 
 	var f repo.File
 	if err := yaml.Unmarshal(b, &f); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to unmarshal file %s. %s", repoFile, err)
 	}
 
 	if f.Has(name) {
-		fmt.Printf("repository name (%s) already exists\n", name)
-		return
+		return fmt.Errorf("repository name (%s) already exists", name)
 	}
 
 	c := repo.Entry{
@@ -184,36 +193,42 @@ func RepoAdd(name, url string) {
 
 	r, err := repo.NewChartRepository(&c, getter.All(settings))
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("looks like %q is not a valid chart repository or cannot be reached. %s", url, err)
 	}
 
 	if _, err := r.DownloadIndexFile(); err != nil {
 		err := errors.Wrapf(err, "looks like %q is not a valid chart repository or cannot be reached", url)
-		log.Fatal(err)
+		return err
 	}
 
 	f.Update(&c)
 
 	if err := f.WriteFile(repoFile, 0644); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to write file %s. %s", repoFile, err)
 	}
-	fmt.Printf("%q has been added to your repositories\n", name)
+
+	if debug {
+		fmt.Printf("%q has been added to your repositories\n", name)
+	}
+
+	return nil
 }
 
 // RepoUpdate updates charts for all helm repos
-func RepoUpdate() {
+func RepoUpdate(debug bool) error {
 	var settings = cli.New()
 	repoFile := settings.RepositoryConfig
 
 	f, err := repo.LoadFile(repoFile)
 	if os.IsNotExist(errors.Cause(err)) || len(f.Repositories) == 0 {
-		log.Fatal(errors.New("no repositories found. You must add one before updating"))
+		return errors.New("no repositories found. You must add one before updating")
 	}
 	var repos []*repo.ChartRepository
 	for _, cfg := range f.Repositories {
 		r, err := repo.NewChartRepository(cfg, getter.All(settings))
 		if err != nil {
-			log.Fatal(err)
+			return errors.Wrapf(err, "looks like %q is not a valid chart repository or cannot be reached",
+				cfg.URL)
 		}
 		repos = append(repos, r)
 	}
@@ -224,31 +239,42 @@ func RepoUpdate() {
 		wg.Add(1)
 		go func(re *repo.ChartRepository) {
 			defer wg.Done()
-			if _, err := re.DownloadIndexFile(); err != nil {
-				fmt.Printf("...Unable to get an update from the %q chart repository (%s):\n\t%s\n", re.Config.Name, re.Config.URL, err)
-			} else {
-				fmt.Printf("...Successfully got an update from the %q chart repository\n", re.Config.Name)
+			if debug {
+				if _, err := re.DownloadIndexFile(); err != nil {
+					fmt.Printf("...Unable to get an update from the %q chart repository (%s):\n\t%s\n", re.Config.Name, re.Config.URL, err)
+				} else {
+					fmt.Printf("...Successfully got an update from the %q chart repository\n", re.Config.Name)
+				}
 			}
 		}(re)
 	}
+
 	wg.Wait()
-	fmt.Printf("Update Complete. ⎈ Happy Helming!⎈\n")
+
+	if debug {
+		fmt.Printf("Update Complete. ⎈ Happy Helming!⎈\n")
+	}
+
+	return nil
 }
 
-func UninstallChart(kubeconfig, name, namespace string) {
+func UninstallChart(kubeconfig, name, namespace string) error {
 	var settings = cli.New()
 	settings.KubeConfig = kubeconfig
 	actionConfig := new(action.Configuration)
 	if err := actionConfig.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), debug); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to initialize helm action configuration: %w", err)
 	}
 	client := action.NewUninstall(actionConfig)
 
 	release, err := client.Run(name)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to uninstall chart: %w", err)
 	}
+
 	fmt.Println("uninstalled", release.Release.Name)
+
+	return nil
 }
 
 func isChartInstallable(ch *chart.Chart) (bool, error) {

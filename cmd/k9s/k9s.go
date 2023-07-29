@@ -16,8 +16,10 @@ var Cmd = &cobra.Command{
 	Short: "Run K9s",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		verbose := cmd.Flag("verbose").Value.String() == "true"
 		err := bash.ExecuteCmd(
 			"k9s",
+			verbose,
 			"--kubeconfig",
 			configs.Config.Kubeconfig.Path,
 		)

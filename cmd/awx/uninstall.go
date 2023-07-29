@@ -10,7 +10,8 @@ import (
 	"github.com/zcubbs/zrun/bash"
 	"github.com/zcubbs/zrun/configs"
 	"github.com/zcubbs/zrun/helm"
-	"log"
+	"github.com/zcubbs/zrun/kubectl"
+	"github.com/zcubbs/zrun/util"
 )
 
 // upgrade represents the list command
@@ -19,15 +20,8 @@ var uninstall = &cobra.Command{
 	Short: "Uninstall awx",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nukeOperator()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = nukeInstance(instanceTmpl, secretTmpl)
-		if err != nil {
-			log.Fatal(err)
-		}
+		util.Must(nukeOperator())
+		util.Must(nukeInstance(instanceTmpl, secretTmpl))
 	},
 }
 
@@ -38,7 +32,10 @@ func init() {
 func nukeOperator() error {
 	kubeconfig := configs.Config.Kubeconfig.Path
 	// Install charts
-	helm.UninstallChart(kubeconfig, "awx-operator", "default")
+	err := helm.UninstallChart(kubeconfig, "awx-operator", "default")
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -52,18 +49,20 @@ func nukeInstance(instanceTmplStr, secretTmplStr string) error {
 		"Password":     "admin",
 	}
 
-	err := applyTmpl(instanceTmplStr, tmplData)
+	err := kubectl.ApplyManifest(instanceTmplStr, tmplData, false)
 	if err != nil {
 		return err
 	}
 
-	err = applyTmpl(secretTmplStr, tmplData)
+	err = kubectl.ApplyManifest(secretTmplStr, tmplData, false)
 	if err != nil {
 		return err
 	}
+
+	verbose := Cmd.Flag("verbose").Value.String() == "true"
 
 	err = bash.ExecuteCmd("kubectl",
-		"delete",
+		verbose,
 		"secret",
 		"awx-admin-password",
 		"-o",

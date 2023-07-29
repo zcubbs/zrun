@@ -5,9 +5,10 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package argo
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/kubectl"
-	"log"
+	"os"
 )
 
 var (
@@ -15,14 +16,15 @@ var (
 )
 
 // install represents the list command
-var project = &cobra.Command{
-	Use:   "project",
+var addProjectCmd = &cobra.Command{
+	Use:   "add-project",
 	Short: "add project to ArgoCD",
 	Long:  `add project to ArgoCD`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := addProject()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	},
 }
@@ -58,7 +60,7 @@ func addProject() error {
 	// create project
 	project := &argoAppProject{
 		Name:      projectName,
-		Namespace: namespace,
+		Namespace: "argo-cd",
 	}
 
 	// Apply template
@@ -74,14 +76,14 @@ func addProject() error {
 
 func init() {
 	// parse flags
-	project.Flags().StringVar(&projectName, "name", "", "project name")
+	addProjectCmd.Flags().StringVar(&projectName, "name", "", "project name")
 
 	// make flags required
-	err := project.MarkFlagRequired("name")
+	err := addProjectCmd.MarkFlagRequired("name")
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 
 	// add command to root
-	Cmd.AddCommand(project)
+	Cmd.AddCommand(addProjectCmd)
 }

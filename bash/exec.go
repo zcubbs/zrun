@@ -10,7 +10,7 @@ import (
 	"os/exec"
 )
 
-func ExecuteScript(script string, commands ...string) (bool, error) {
+func ExecuteScript(script string, output bool, commands ...string) (bool, error) {
 	cmd := &exec.Cmd{
 		Path:   script,
 		Args:   commands,
@@ -18,7 +18,9 @@ func ExecuteScript(script string, commands ...string) (bool, error) {
 		Stderr: os.Stderr,
 	}
 
-	fmt.Println("Executing command ", cmd)
+	if output {
+		fmt.Println("Executing command ", cmd)
+	}
 
 	err := cmd.Start()
 	if err != nil {
@@ -33,7 +35,7 @@ func ExecuteScript(script string, commands ...string) (bool, error) {
 	return true, nil
 }
 
-func ExecuteCmd(cmd string, args ...string) error {
+func ExecuteCmd(cmd string, output bool, args ...string) error {
 	execute := exec.Command(cmd, args...)
 	stdout, err := execute.Output()
 
@@ -43,7 +45,9 @@ func ExecuteCmd(cmd string, args ...string) error {
 	}
 
 	// Print the output
-	fmt.Println(string(stdout))
+	if output {
+		fmt.Println(string(stdout))
+	}
 
 	return nil
 }

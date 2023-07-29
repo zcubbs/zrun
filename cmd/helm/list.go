@@ -5,12 +5,12 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package helm
 
 import (
+	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/configs"
 	"github.com/zcubbs/zrun/helm"
 	zTime "github.com/zcubbs/zrun/time"
-	"log"
 	"os"
 	"time"
 )
@@ -21,18 +21,21 @@ var list = &cobra.Command{
 	Short: "List all helm releases",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		ExecuteHelmListCmd()
-
+		err := ExecuteHelmListCmd()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	},
 }
 
-func ExecuteHelmListCmd() {
+func ExecuteHelmListCmd() error {
 	_releases, err := helm.GetAllReleases(
 		configs.Config.Kubeconfig.Path,
 	)
 
 	if err != nil {
-		log.Fatal("Could not list helm releases", err)
+		return fmt.Errorf("could not list helm releases. %w", err)
 	}
 
 	t := table.NewWriter()
@@ -59,9 +62,10 @@ func ExecuteHelmListCmd() {
 
 	t.Render()
 	if err != nil {
-		println(err.Error())
-		panic("Could not list helm releases")
+		return fmt.Errorf("could not list helm releases. %w", err)
 	}
+
+	return nil
 }
 
 func init() {

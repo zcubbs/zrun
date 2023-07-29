@@ -5,7 +5,7 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package healthcheck
 
 import (
-	"github.com/zcubbs/zrun/log"
+	"fmt"
 	"net"
 	"strings"
 	"sync"
@@ -63,10 +63,7 @@ func waitOne(service string, wg *sync.WaitGroup, start time.Time) {
 	for {
 		_, err := net.Dial("tcp", service)
 		if err == nil {
-			log.Fatalw("%s is available after %s", map[string]any{
-				"service": service,
-				"elapsed": time.Since(start),
-			})
+			fmt.Printf("service %s is available after %s", service, time.Since(start))
 			break
 		}
 		time.Sleep(time.Second)

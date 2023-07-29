@@ -10,8 +10,8 @@ import (
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/configs"
 	helmPkg "github.com/zcubbs/zrun/helm"
+	"github.com/zcubbs/zrun/util"
 	"helm.sh/helm/v3/pkg/cli/values"
-	"log"
 )
 
 var (
@@ -51,15 +51,11 @@ var install = &cobra.Command{
 	Short: "install traefik Chart",
 	Long:  `install traefik Chart. Note: requires helm`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := installChart()
-		if err != nil {
-			log.Fatal(err)
-		}
+		util.Must(installChart())
 	},
 }
 
 func installChart() error {
-	fmt.Println("installing cert-manager Chart")
 	kubeconfig := configs.Config.Kubeconfig.Path
 
 	var additionalArgs []string
@@ -100,7 +96,7 @@ func installChart() error {
 
 	verbose := Cmd.Flag("verbose").Value.String() == "true"
 
-	helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
+	err := helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
 		Kubeconfig:   kubeconfig,
 		RepoName:     "traefik",
 		RepoUrl:      "https://helm.traefik.io/traefik",
@@ -110,6 +106,9 @@ func installChart() error {
 		ChartValues:  options,
 		Debug:        verbose,
 	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

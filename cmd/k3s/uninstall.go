@@ -5,9 +5,10 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package k3s
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/k3s"
-	"log"
+	"github.com/zcubbs/zrun/util"
 )
 
 // uninstall represents the list command
@@ -16,10 +17,9 @@ var uninstall = &cobra.Command{
 	Short: "uninstall k3s",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := k3s.Uninstall()
-		if err != nil {
-			log.Fatal(err)
-		}
+		util.Must(k3s.Uninstall(false))
+
+		fmt.Println("k3s uninstalled")
 	},
 }
 

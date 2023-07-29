@@ -8,16 +8,12 @@ import (
 	"fmt"
 	"github.com/zcubbs/zrun/bash"
 	osx "github.com/zcubbs/zrun/os"
-	"io"
-	"log"
 	"os"
 	"text/template"
 )
 
 const InstallScript = "/tmp/k3s-install.sh"
 const UninstallScript = "/usr/local/bin/k3s-uninstall.sh"
-
-const ConfigTemplate = "config.tmpl"
 const ConfigFileLocation = "/etc/rancher/k3s"
 
 type Config struct {
@@ -52,8 +48,11 @@ write-kubeconfig-mode: {{ .WriteKubeconfigMode }}
 {{- end }}
 `
 
-func Install(config Config) error {
-	fmt.Printf("%+v\n", config)
+func Install(config Config, debug bool) error {
+	if debug {
+		fmt.Printf("%+v\n", config)
+	}
+
 	// prepare config file
 	err := osx.CreateDirIfNotExist(ConfigFileLocation)
 	if err != nil {
@@ -73,12 +72,13 @@ func Install(config Config) error {
 	// curl -sfL https://get.k3s.io -o k3s-install.sh
 	err = bash.ExecuteCmd(
 		"curl",
+		debug,
 		"https://get.k3s.io",
 		"-o",
 		InstallScript,
 	)
 	if err != nil {
-		return fmt.Errorf("error while running %s \n%v",
+		return fmt.Errorf("error while executing %s \n%v",
 			"curl https://get.k3s.io -o k3s-install.sh",
 			err,
 		)
@@ -92,14 +92,15 @@ func Install(config Config) error {
 			err)
 	}
 
-	_, err = bash.ExecuteScript(
+	ok, err := bash.ExecuteScript(
 		InstallScript,
+		debug,
 		InstallScript,
 		"-s",
 		"-",
 		"--write-kubeconfig-mode=644",
 	)
-	if err != nil {
+	if !ok && err != nil {
 		return fmt.Errorf("error while running %s \n%v",
 			"./k3s-install.sh -s - --write-kubeconfig-mode 644",
 			err)
@@ -120,7 +121,12 @@ func WriteTemplateToFile(templateStr string, config Config, outputFilePath strin
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(f)
 
 	// Apply the template to the config data and write to the file
 	err = tmpl.Execute(f, config)
@@ -131,25 +137,10 @@ func WriteTemplateToFile(templateStr string, config Config, outputFilePath strin
 	return nil
 }
 
-func PrintFileContents(filePath string) error {
-	f, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-	defer func(f *os.File) {
-		err := f.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(f)
-
-	_, err = io.Copy(os.Stdout, f)
-	return err
-}
-
-func Uninstall() error {
+func Uninstall(debug bool) error {
 	_, err := bash.ExecuteScript(
 		UninstallScript,
+		debug,
 		UninstallScript,
 	)
 	if err != nil {

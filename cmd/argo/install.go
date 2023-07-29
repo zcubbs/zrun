@@ -1,8 +1,8 @@
-// Package certmanager
+// Package argo
 /*
 Copyright © 2023 zcubbs https://github.com/zcubbs
 */
-package certmanager
+package argo
 
 import (
 	"fmt"
@@ -11,9 +11,10 @@ import (
 	"github.com/zcubbs/zrun/configs"
 	helmPkg "github.com/zcubbs/zrun/helm"
 	"helm.sh/helm/v3/pkg/cli/values"
-	"k8s.io/utils/strings/slices"
 	"os"
 )
+
+const ArgocdString = "argo-cd"
 
 var (
 	chartVersion string
@@ -23,8 +24,8 @@ var (
 // install represents the list command
 var install = &cobra.Command{
 	Use:   "install",
-	Short: "install cert-manager Chart",
-	Long:  `install cert-manager Chart. Note: requires helm`,
+	Short: "install argo-cd Chart",
+	Long:  `install argo-cd Chart. Note: requires helm`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := installChart()
 		if err != nil {
@@ -36,21 +37,14 @@ var install = &cobra.Command{
 
 func installChart() error {
 	kubeconfig := configs.Config.Kubeconfig.Path
-
-	// chack if options.Values contains "installCRDs"
-	// if not, add it
-	if !slices.Contains(options.Values, "installCRDs=true") {
-		options.Values = append(options.Values, "installCRDs=true")
-	}
-
 	verbose := Cmd.Flag("verbose").Value.String() == "true"
 
 	err := helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
 		Kubeconfig:   kubeconfig,
-		ChartName:    "cert-manager",
-		RepoName:     "jetstack",
-		RepoUrl:      "https://charts.jetstack.io",
-		Namespace:    "cert-manager",
+		ChartName:    ArgocdString,
+		RepoName:     ArgocdString,
+		RepoUrl:      "https://argoproj.github.io/argo-helm",
+		Namespace:    ArgocdString,
 		ChartVersion: chartVersion,
 		ChartValues:  options,
 		Debug:        verbose,

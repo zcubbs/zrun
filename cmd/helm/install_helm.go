@@ -5,9 +5,10 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package helm
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/helm"
-	"log"
+	"os"
 )
 
 // installHelm represents the list command
@@ -18,7 +19,8 @@ var installHelm = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := ExecuteInstallHelmCmd()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	},
 }
@@ -28,8 +30,20 @@ func init() {
 }
 
 func ExecuteInstallHelmCmd() error {
-	// Add helm repo
-	err := helm.Install()
+	fmt.Println("-------------------------------------------")
+	fmt.Println("installing helm...")
+	// check if helm is installed
+	installed, err := helm.IsHelmInstalled()
+	if err != nil {
+		return err
+	}
+
+	if installed {
+		fmt.Println("helm is already installed")
+		return nil
+	}
+
+	err = helm.Install(false)
 	if err != nil {
 		return err
 	}

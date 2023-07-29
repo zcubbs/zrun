@@ -1,10 +1,11 @@
 package k8s
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/configs"
 	"github.com/zcubbs/zrun/kubectl"
-	"log"
+	"os"
 )
 
 var namespace string
@@ -15,27 +16,33 @@ var createNamespace = &cobra.Command{
 	Short: "Show k8s create-ns list",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		ExecuteCreateNamespaceCmd(
+		err := ExecuteCreateNamespaceCmd(
 			configs.Config.Kubeconfig.Path,
 			namespace,
 		)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	},
 }
 
-func ExecuteCreateNamespaceCmd(kubeconfig, namespace string) {
+func ExecuteCreateNamespaceCmd(kubeconfig, namespace string) error {
 	err := kubectl.CreateNamespace(
 		kubeconfig,
 		namespace,
 	)
 	if err != nil {
-		log.Fatalf("couldn't create namespace\n %v", err)
+		return fmt.Errorf("couldn't create namespace\n %v", err)
 	}
+
+	return nil
 }
 
 func init() {
 	createNamespace.Flags().StringVarP(&namespace, "namespace", "n", "", "namespace value")
 	if err := createNamespace.MarkFlagRequired("namespace"); err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 
 	Cmd.AddCommand(createNamespace)

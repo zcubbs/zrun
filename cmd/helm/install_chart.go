@@ -11,7 +11,7 @@ import (
 	"github.com/zcubbs/zrun/configs"
 	"github.com/zcubbs/zrun/helm"
 	"helm.sh/helm/v3/pkg/cli/values"
-	"log"
+	"os"
 )
 
 var (
@@ -30,20 +30,11 @@ var installChart = &cobra.Command{
 	Short: "list all helm releases",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		kubeconfig = configs.Config.Kubeconfig.Path
-
-		fmt.Println("kubeconfig: ", kubeconfig)
-		fmt.Println("repoName: ", repoName)
-		fmt.Println("repoUrl: ", repoUrl)
-		fmt.Println("chartName: ", chartName)
-		fmt.Println("namespace: ", namespace)
-		fmt.Println("chartVersion: ", chartVersion)
-		fmt.Printf("chartValues: %+v", chartValues)
 
 		// Execute Command
 		verbose := Cmd.Flag("verbose").Value.String() == "true"
-		ExecuteInstallChartCmd(helm.InstallChartOptions{
+		err := ExecuteInstallChartCmd(helm.InstallChartOptions{
 			Kubeconfig:   kubeconfig,
 			RepoName:     repoName,
 			RepoUrl:      repoUrl,
@@ -53,6 +44,10 @@ var installChart = &cobra.Command{
 			ChartValues:  chartValues,
 			Debug:        verbose,
 		})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	},
 }
 
@@ -65,30 +60,61 @@ func init() {
 	installChart.Flags().StringArrayVar(&chartValues.Values, "set", nil, "chart values")
 
 	if err := installChart.MarkFlagRequired("repo-name"); err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 	if err := installChart.MarkFlagRequired("repo-url"); err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 	if err := installChart.MarkFlagRequired("chart-name"); err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 	if err := installChart.MarkFlagRequired("namespace"); err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 
 	Cmd.AddCommand(installChart)
 }
 
-func ExecuteInstallChartCmd(options helm.InstallChartOptions) {
+func ExecuteInstallChartCmd(options helm.InstallChartOptions) error {
+	fmt.Println("-------------------------------------------")
+	fmt.Printf("installing '%s' helm Chart ...\n", options.ChartName)
+	if options.Debug {
+		fmt.Println("kubeconfig: ", options.Kubeconfig)
+		fmt.Println("repoName: ", options.RepoName)
+		fmt.Println("repoUrl: ", options.RepoUrl)
+		fmt.Println("chartName: ", options.ChartName)
+		fmt.Println("namespace: ", options.Namespace)
+		fmt.Println("chartVersion: ", options.ChartVersion)
+		fmt.Printf("chartValues: %+v", options.ChartValues)
+		fmt.Printf("Helm options: %+v\n", options)
+	}
+
 	// Add helm repo
-	helm.RepoAdd(options.RepoName, options.RepoUrl)
+	err := helm.RepoAdd(options.RepoName, options.RepoUrl, options.Debug)
+	if err != nil {
+		return err
+	}
+
 	// Update charts from the helm repo
-	helm.RepoUpdate()
+	err = helm.RepoUpdate(options.Debug)
+	if err != nil {
+		return err
+	}
+
 	// Create Namespace
 	k8s.ExecuteCreateNamespaceCmd(options.Kubeconfig, options.Namespace)
+
 	// Install charts
-	helm.InstallChart(options)
+	err = helm.InstallChart(options)
+	if err != nil {
+		return err
+	}
+
 	// List helm releases
-	ExecuteHelmListCmd()
+	err = ExecuteHelmListCmd()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
