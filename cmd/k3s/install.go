@@ -7,7 +7,9 @@ package k3s
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/zcubbs/zrun/configs"
 	"github.com/zcubbs/zrun/k3s"
+	"github.com/zcubbs/zrun/kubernetes"
 	"github.com/zcubbs/zrun/util"
 )
 
@@ -35,6 +37,12 @@ var install = &cobra.Command{
 			DefaultLocalStoragePath: volumeStorageDir,
 			WriteKubeconfigMode:     writeKubeconfigMode,
 		}, verbose))
+
+		kubeconfig := configs.Config.Kubeconfig.Path
+		ok, err := kubernetes.IsClusterReady(cmd.Context(), kubeconfig)
+		if !ok || err != nil {
+			util.GetTheHeckOut(err)
+		}
 	},
 }
 

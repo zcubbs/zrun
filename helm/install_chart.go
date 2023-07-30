@@ -40,8 +40,21 @@ type InstallChartOptions struct {
 func InstallChart(options InstallChartOptions) error {
 	var settings = cli.New()
 	settings.KubeConfig = options.Kubeconfig
+	settings.Debug = options.Debug
+
 	actionConfig := new(action.Configuration)
-	if err := actionConfig.Init(settings.RESTClientGetter(), options.Namespace, os.Getenv("HELM_DRIVER"), debug); err != nil {
+
+	var helmLog = noLog
+
+	if options.Debug {
+		helmLog = debugLog
+	}
+
+	if err := actionConfig.Init(
+		settings.RESTClientGetter(),
+		options.Namespace,
+		os.Getenv("HELM_DRIVER"),
+		helmLog); err != nil {
 		return fmt.Errorf("failed to init action config. %s", err)
 	}
 
@@ -69,7 +82,7 @@ func InstallChart(options InstallChartOptions) error {
 	}
 
 	if options.Debug {
-		debug("CHART PATH: %s\n", cp)
+		helmLog("CHART PATH: %s\n", cp)
 	}
 
 	p := getter.All(settings)
@@ -99,8 +112,10 @@ func InstallChart(options InstallChartOptions) error {
 	client.Namespace = options.Namespace
 	release, err := client.Run(chartRequested, vals)
 	if err != nil {
-		if err.Error() == "cannot re-use a name that is still in use" && options.Debug {
-			fmt.Println("warning: chart release name already exists, no action taken!")
+		if err.Error() == "cannot re-use a name that is still in use" {
+			if options.Debug {
+				fmt.Println("warning: chart release name already exists, no action taken!")
+			}
 			return nil
 		}
 		return fmt.Errorf("failed to install chart: %w", err)
@@ -183,7 +198,10 @@ func RepoAdd(name, url string, debug bool) error {
 	}
 
 	if f.Has(name) {
-		return fmt.Errorf("repository name (%s) already exists", name)
+		if debug {
+			fmt.Printf("%q already exists with the same configuration, skipping\n", name)
+		}
+		return nil
 	}
 
 	c := repo.Entry{
@@ -233,7 +251,10 @@ func RepoUpdate(debug bool) error {
 		repos = append(repos, r)
 	}
 
-	fmt.Printf("Hang tight while we grab the latest from your chart repositories...\n")
+	if debug {
+		fmt.Printf("Hang tight while we grab the latest from your chart repositories...\n")
+	}
+
 	var wg sync.WaitGroup
 	for _, re := range repos {
 		wg.Add(1)
@@ -258,11 +279,21 @@ func RepoUpdate(debug bool) error {
 	return nil
 }
 
-func UninstallChart(kubeconfig, name, namespace string) error {
+func UninstallChart(kubeconfig, name, namespace string, debug bool) error {
 	var settings = cli.New()
 	settings.KubeConfig = kubeconfig
 	actionConfig := new(action.Configuration)
-	if err := actionConfig.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), debug); err != nil {
+
+	var helmLog = noLog
+
+	if debug {
+		helmLog = debugLog
+	}
+
+	if err := actionConfig.Init(settings.RESTClientGetter(),
+		namespace,
+		os.Getenv("HELM_DRIVER"),
+		helmLog); err != nil {
 		return fmt.Errorf("failed to initialize helm action configuration: %w", err)
 	}
 	client := action.NewUninstall(actionConfig)
@@ -272,8 +303,9 @@ func UninstallChart(kubeconfig, name, namespace string) error {
 		return fmt.Errorf("failed to uninstall chart: %w", err)
 	}
 
-	fmt.Println("uninstalled", release.Release.Name)
-
+	if debug {
+		fmt.Println("uninstalled", release.Release.Name)
+	}
 	return nil
 }
 
@@ -285,10 +317,14 @@ func isChartInstallable(ch *chart.Chart) (bool, error) {
 	return false, errors.Errorf("%s charts are not installable", ch.Metadata.Type)
 }
 
-func debug(format string, v ...interface{}) {
+func debugLog(format string, v ...interface{}) {
 	format = fmt.Sprintf("[debug] %s\n", format)
 	err := log.Output(2, fmt.Sprintf(format, v...))
 	if err != nil {
 		return
 	}
+}
+
+func noLog(_ string, _ ...interface{}) {
+	return
 }

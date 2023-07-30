@@ -17,7 +17,7 @@
 ## Install
 
 ```bash
-curl -sfL https://raw.githubusercontent.com/zcubbs/zrun/main/scripts/install/install.sh | bash
+curl -sfL https://raw.githubusercontent.com/zcubbs/zrun/main/scripts/install/install.sh | sh
 ```
 
 ## Contributing

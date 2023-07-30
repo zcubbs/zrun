@@ -51,11 +51,12 @@ var install = &cobra.Command{
 	Short: "install traefik Chart",
 	Long:  `install traefik Chart. Note: requires helm`,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.Must(installChart())
+		verbose := Cmd.Flag("verbose").Value.String() == "true"
+		util.Must(installChart(verbose))
 	},
 }
 
-func installChart() error {
+func installChart(verbose bool) error {
 	kubeconfig := configs.Config.Kubeconfig.Path
 
 	var additionalArgs []string
@@ -92,9 +93,13 @@ func installChart() error {
 		))
 	}
 
-	options.Values = append(options.Values, addAdditionalArgs(additionalArgs)...)
+	args := addAdditionalArgs(additionalArgs)
 
-	verbose := Cmd.Flag("verbose").Value.String() == "true"
+	if verbose {
+		fmt.Printf("...traefik additional args: %s\n", args)
+	}
+
+	options.Values = append(options.Values, args...)
 
 	err := helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
 		Kubeconfig:   kubeconfig,
@@ -120,7 +125,6 @@ func addAdditionalArgs(additionalArgs []string) []string {
 		args = append(args, adaptedArg)
 	}
 
-	fmt.Println(args)
 	return args
 }
 

@@ -5,21 +5,23 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package bash
 
 import (
+	"bytes"
 	"fmt"
-	"os"
 	"os/exec"
 )
 
 func ExecuteScript(script string, output bool, commands ...string) (bool, error) {
+	var out bytes.Buffer
 	cmd := &exec.Cmd{
 		Path:   script,
 		Args:   commands,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
+		Stdout: &out,
+		Stderr: &out,
 	}
 
 	if output {
 		fmt.Println("Executing command ", cmd)
+		fmt.Println(out.String())
 	}
 
 	err := cmd.Start()
@@ -46,6 +48,7 @@ func ExecuteCmd(cmd string, output bool, args ...string) error {
 
 	// Print the output
 	if output {
+		fmt.Printf("Executing command %s\n", execute.String())
 		fmt.Println(string(stdout))
 	}
 

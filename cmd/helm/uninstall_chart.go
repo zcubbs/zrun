@@ -24,8 +24,9 @@ var uninstallChart = &cobra.Command{
 			os.Exit(1)
 		}
 		kubeconfig = configs.Config.Kubeconfig.Path
+		verbose := Cmd.Flag("verbose").Value.String() == "true"
 		// Install charts
-		err = helm.UninstallChart(kubeconfig, chartName, namespace)
+		err = helm.UninstallChart(kubeconfig, chartName, namespace, verbose)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)

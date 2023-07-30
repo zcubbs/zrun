@@ -102,7 +102,10 @@ func ExecuteInstallChartCmd(options helm.InstallChartOptions) error {
 	}
 
 	// Create Namespace
-	k8s.ExecuteCreateNamespaceCmd(options.Kubeconfig, options.Namespace)
+	err = k8s.ExecuteCreateNamespaceCmd(options.Kubeconfig, options.Namespace)
+	if err != nil {
+		return err
+	}
 
 	// Install charts
 	err = helm.InstallChart(options)
@@ -111,9 +114,11 @@ func ExecuteInstallChartCmd(options helm.InstallChartOptions) error {
 	}
 
 	// List helm releases
-	err = ExecuteHelmListCmd()
-	if err != nil {
-		return err
+	if options.Debug {
+		err = ExecuteHelmListCmd()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

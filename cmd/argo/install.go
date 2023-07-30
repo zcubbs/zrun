@@ -5,16 +5,26 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package argo
 
 import (
+	"context"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/configs"
 	helmPkg "github.com/zcubbs/zrun/helm"
+	"github.com/zcubbs/zrun/kubernetes"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"os"
 )
 
-const ArgocdString = "argo-cd"
+const (
+	ArgocdString                                 = "argo-cd"
+	ArgocdServerDeploymentName                   = "argo-cd-argocd-server"
+	ArgocdRepoServerDeploymentName               = "argo-cd-argocd-repo-server"
+	ArgocdRedisDeploymentName                    = "argo-cd-argocd-redis"
+	ArgocdDexServerDeploymentName                = "argo-cd-argocd-dex-server"
+	ArgocdApplicationsetControllerDeploymentName = "argo-cd-argocd-applicationset-controller"
+	ArgocdNotificationsControllerDeploymentName  = "argo-cd-argocd-notifications-controller"
+)
 
 var (
 	chartVersion string
@@ -27,7 +37,7 @@ var install = &cobra.Command{
 	Short: "install argo-cd Chart",
 	Long:  `install argo-cd Chart. Note: requires helm`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := installChart()
+		err := installChart(cmd.Context())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -35,11 +45,11 @@ var install = &cobra.Command{
 	},
 }
 
-func installChart() error {
+func installChart(ctx context.Context) error {
 	kubeconfig := configs.Config.Kubeconfig.Path
 	verbose := Cmd.Flag("verbose").Value.String() == "true"
 
-	err := helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
+	options := helmPkg.InstallChartOptions{
 		Kubeconfig:   kubeconfig,
 		ChartName:    ArgocdString,
 		RepoName:     ArgocdString,
@@ -48,7 +58,27 @@ func installChart() error {
 		ChartVersion: chartVersion,
 		ChartValues:  options,
 		Debug:        verbose,
-	})
+	}
+
+	err := helm.ExecuteInstallChartCmd(options)
+	if err != nil {
+		return err
+	}
+
+	err = kubernetes.IsDeploymentReady(
+		ctx,
+		kubeconfig,
+		options.Namespace,
+		[]string{
+			ArgocdServerDeploymentName,
+			ArgocdRepoServerDeploymentName,
+			ArgocdRedisDeploymentName,
+			ArgocdDexServerDeploymentName,
+			ArgocdApplicationsetControllerDeploymentName,
+			ArgocdNotificationsControllerDeploymentName,
+		},
+		options.Debug,
+	)
 	if err != nil {
 		return err
 	}

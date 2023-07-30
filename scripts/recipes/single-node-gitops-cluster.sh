@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 echo "-------------------------------------------"
@@ -44,7 +44,7 @@ traefik_install() {
         || { echo "traefik installation failed"; exit 1; }
 }
 
-helm_install_argocd_chart() {
+argocd_install() {
     sudo zrun argo install \
         || { echo "argocd installation failed"; exit 1; }
 }
@@ -58,7 +58,8 @@ argocd_add_project() {
 # values "argo-git-repo-username" and "argo-git-repo-password" are stored in vault
 # and are used to authenticate to the git repo
 # to add a secret to vault, run the following command:
-# sudo zrun vault add --key "argo-git-repo-username" --val "username"
+# sudo zrun vault add --key "argo-git-repo-username" --val "usernameXYZ"
+# sudo zrun vault add --key "argo-git-repo-password" --val "password123"
 argocd_add_repos() {
     sudo zrun argocd add-repo \
         --name "gitops" \
@@ -73,13 +74,13 @@ argocd_add_repos() {
 
 wait_for_cluster() {
     echo "-------------------------------------------"
-    echo "waiting for Cluster to be ready..."
+    echo "waiting for cluster to be ready..."
     until kubectl get nodes; do sleep 1; done
 }
 
 wait_for_argocd() {
     echo "-------------------------------------------"
-    echo "waiting for ArgoCD to be ready..."
+    echo "waiting for argo-cd to be ready..."
     until kubectl -n argo-cd get pods | grep Running; do sleep 1; done
 }
 
@@ -92,11 +93,11 @@ main() {
     k3s_install
     k9s_install
     helm_install
-    wait_for_cluster
+#    wait_for_cluster
     cert_manager_install
     traefik_install
-    helm_install_argocd_chart
-    wait_for_argocd
+    argocd_install
+#    wait_for_argocd
     run_k9s
 }
 

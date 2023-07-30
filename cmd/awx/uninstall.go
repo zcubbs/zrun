@@ -31,8 +31,10 @@ func init() {
 
 func nukeOperator() error {
 	kubeconfig := configs.Config.Kubeconfig.Path
+	verbose := Cmd.Flag("verbose").Value.String() == "true"
+
 	// Install charts
-	err := helm.UninstallChart(kubeconfig, "awx-operator", "default")
+	err := helm.UninstallChart(kubeconfig, "awx-operator", "default", verbose)
 	if err != nil {
 		return err
 	}

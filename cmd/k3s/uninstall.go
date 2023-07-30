@@ -17,7 +17,8 @@ var uninstall = &cobra.Command{
 	Short: "uninstall k3s",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.Must(k3s.Uninstall(false))
+		verbose := Cmd.Flag("verbose").Value.String() == "true"
+		util.Must(k3s.Uninstall(verbose))
 
 		fmt.Println("k3s uninstalled")
 	},

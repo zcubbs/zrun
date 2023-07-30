@@ -27,11 +27,5 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	Cmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "", "namespace")
-
-	// add mandatory flags
-	err := Cmd.MarkPersistentFlagRequired("namespace")
-	if err != nil {
-		fmt.Println(err)
-	}
+	Cmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "argo-cd", "namespace")
 }

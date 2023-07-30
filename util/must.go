@@ -7,11 +7,11 @@ import (
 
 func Must(err error) {
 	if err != nil {
-		getTheHeckOut(err)
+		GetTheHeckOut(err)
 	}
 }
 
-func getTheHeckOut(err error) {
+func GetTheHeckOut(err error) {
 	fmt.Println(err)
 	os.Exit(1)
 }

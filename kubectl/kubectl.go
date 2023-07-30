@@ -9,19 +9,17 @@ import (
 	"context"
 	"fmt"
 	"github.com/zcubbs/zrun/bash"
+	"github.com/zcubbs/zrun/kubernetes"
 	apiv1 "k8s.io/api/core/v1"
 	errosv1 "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"text/template"
 	"time"
 )
 
 func CreateNamespace(kubeconfig string, namespace string) error {
-
-	cs := GetClientSet(kubeconfig)
+	cs := kubernetes.GetClientSet(kubeconfig)
 	ns := &apiv1.Namespace{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
@@ -41,20 +39,6 @@ func CreateNamespace(kubeconfig string, namespace string) error {
 	}
 
 	return nil
-}
-
-func GetClientSet(kubeconfig string) *kubernetes.Clientset {
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	cs, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	return cs
 }
 
 func ApplyManifest(manifestTmpl string, data interface{}, debug bool) error {
