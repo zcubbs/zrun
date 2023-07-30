@@ -84,6 +84,9 @@ func initVault() (*zvault.SecretVault, error) {
 			fmt.Sprintf("%s/%s", getUserHomePath(),
 				".zrun_vault_cfg"),
 		)
+		if err != nil {
+			return nil, err
+		}
 
 		return sv, nil
 	}

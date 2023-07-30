@@ -325,6 +325,4 @@ func debugLog(format string, v ...interface{}) {
 	}
 }
 
-func noLog(_ string, _ ...interface{}) {
-	return
-}
+func noLog(_ string, _ ...interface{}) {}
