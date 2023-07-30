@@ -5,7 +5,7 @@ echo "-------------------------------------------"
 echo "Installing zrun"
 go build -o ./bin/zrun
 cp ./bin/zrun /usr/local/bin/zrun
-#zrun about
+zrun version
 
 echo "-------------------------------------------"
 echo "Bootstrapping environment..."
@@ -98,7 +98,7 @@ main() {
     traefik_install
     argocd_install
 #    wait_for_argocd
-    run_k9s
+#    run_k9s
 }
 
 main

@@ -6,14 +6,14 @@ package argo
 
 import (
 	"context"
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/configs"
 	helmPkg "github.com/zcubbs/zrun/helm"
 	"github.com/zcubbs/zrun/kubernetes"
+	"github.com/zcubbs/zrun/style"
+	"github.com/zcubbs/zrun/util"
 	"helm.sh/helm/v3/pkg/cli/values"
-	"os"
 )
 
 const (
@@ -37,11 +37,17 @@ var install = &cobra.Command{
 	Short: "install argo-cd Chart",
 	Long:  `install argo-cd Chart. Note: requires helm`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := installChart(cmd.Context())
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+
+		style.PrintColoredHeader("install argocd")
+
+		util.Must(
+			util.RunTask(func() error {
+				err := installChart(cmd.Context())
+				if err != nil {
+					return err
+				}
+				return nil
+			}, true))
 	},
 }
 

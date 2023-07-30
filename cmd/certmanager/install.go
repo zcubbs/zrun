@@ -5,14 +5,14 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package certmanager
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/configs"
 	helmPkg "github.com/zcubbs/zrun/helm"
+	"github.com/zcubbs/zrun/style"
+	"github.com/zcubbs/zrun/util"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"k8s.io/utils/strings/slices"
-	"os"
 )
 
 var (
@@ -26,11 +26,17 @@ var install = &cobra.Command{
 	Short: "install cert-manager Chart",
 	Long:  `install cert-manager Chart. Note: requires helm`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := installChart()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		style.PrintColoredHeader("install cert-manager")
+
+		util.Must(
+			util.RunTask(func() error {
+				err := installChart()
+				if err != nil {
+					return err
+				}
+				return nil
+			}, true))
+
 	},
 }
 

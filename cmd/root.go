@@ -14,6 +14,7 @@ import (
 	"github.com/zcubbs/zrun/cmd/certmanager"
 	"github.com/zcubbs/zrun/cmd/config"
 	"github.com/zcubbs/zrun/cmd/git"
+	"github.com/zcubbs/zrun/cmd/hello"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/cmd/info"
 	"github.com/zcubbs/zrun/cmd/k3s"
@@ -21,6 +22,7 @@ import (
 	"github.com/zcubbs/zrun/cmd/k9s"
 	zos "github.com/zcubbs/zrun/cmd/os"
 	"github.com/zcubbs/zrun/cmd/traefik"
+	"github.com/zcubbs/zrun/cmd/upgrade"
 	"github.com/zcubbs/zrun/cmd/vault"
 	"github.com/zcubbs/zrun/defaults"
 	"os"
@@ -39,17 +41,21 @@ var (
 		},
 	}
 
+	versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Print the version number of zrun",
+		Long:  "",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Printf("zrun version %s\n", defaults.Version)
+		},
+	}
+
 	aboutCmd = &cobra.Command{
 		Use:   "about",
 		Short: "Print the info about zrun",
 		Long:  "",
 		Run: func(cmd *cobra.Command, args []string) {
-			figure.NewColorFigure("ZRUN", "colossal", "red", true).Print()
-			figure.NewColorFigure("zrun", "morse", "red", true).Print()
-			fmt.Printf("Version: %s\n", defaults.Version)
-			fmt.Println("<zrun> is a swiss army knife cli for devops engineers")
-			fmt.Println("Copyright (c) 2023 zakaria.elbouwab (zcubbs)")
-			fmt.Println("Repository: https://github.com/zcubbs/zrun")
+			About()
 		},
 	}
 )
@@ -63,8 +69,10 @@ func Execute() {
 
 func addSubCommandPalettes() {
 	rootCmd.AddCommand(config.Cmd)
+	rootCmd.AddCommand(upgrade.Cmd)
 	rootCmd.AddCommand(zos.Cmd)
 	rootCmd.AddCommand(info.Cmd)
+	rootCmd.AddCommand(hello.Cmd)
 	rootCmd.AddCommand(awx.Cmd)
 	rootCmd.AddCommand(helm.Cmd)
 	rootCmd.AddCommand(k8s.Cmd)
@@ -82,5 +90,15 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
 	rootCmd.AddCommand(aboutCmd)
 	rootCmd.AddCommand(viperCommand)
+	rootCmd.AddCommand(versionCmd)
 	addSubCommandPalettes()
+}
+
+func About() {
+	figure.NewColorFigure("ZRUN", "colossal", "red", true).Print()
+	figure.NewColorFigure("zrun", "morse", "red", true).Print()
+	fmt.Printf("Version: %s\n", defaults.Version)
+	fmt.Println("<zrun> is a swiss army knife cli for devops engineers")
+	fmt.Println("Copyright (c) 2023 zakaria.elbouwab (zcubbs)")
+	fmt.Println("Repository: https://github.com/zcubbs/zrun")
 }

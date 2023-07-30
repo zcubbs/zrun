@@ -8,7 +8,8 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/helm"
-	"os"
+	"github.com/zcubbs/zrun/style"
+	"github.com/zcubbs/zrun/util"
 )
 
 // installHelm represents the list command
@@ -17,11 +18,16 @@ var installHelm = &cobra.Command{
 	Short: "install helm CLI",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := ExecuteInstallHelmCmd()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		style.PrintColoredHeader("install helm cli")
+
+		util.Must(
+			util.RunTask(func() error {
+				err := ExecuteInstallHelmCmd()
+				if err != nil {
+					return err
+				}
+				return nil
+			}, true))
 	},
 }
 
@@ -30,15 +36,14 @@ func init() {
 }
 
 func ExecuteInstallHelmCmd() error {
-	fmt.Println("-------------------------------------------")
-	fmt.Println("installing helm...")
+	verbose := Cmd.Flag("verbose").Value.String() == "true"
 	// check if helm is installed
 	installed, err := helm.IsHelmInstalled()
 	if err != nil {
 		return err
 	}
 
-	if installed {
+	if installed && verbose {
 		fmt.Println("helm is already installed")
 		return nil
 	}

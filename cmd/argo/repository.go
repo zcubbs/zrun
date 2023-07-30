@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/kubectl"
+	"github.com/zcubbs/zrun/style"
+	"github.com/zcubbs/zrun/util"
 	zvault "github.com/zcubbs/zrun/vault"
 	"os"
 	"strings"
@@ -35,45 +37,59 @@ var repository = &cobra.Command{
 	Short: "add repository to ArgoCD",
 	Long:  `add repository to ArgoCD`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// check if repository type not git or helm
-		if repositoryType != Git && repositoryType != Helm {
-			fmt.Println("error: repository type must be git or helm")
-			return // exit
-		}
-
-		urlValid := strings.HasPrefix(repositoryUrl, "http://") ||
-			strings.HasPrefix(repositoryUrl, "https://")
-
-		// check if url is valid
-		if !urlValid {
-			fmt.Printf("error: repository url must be valid url: %s", repositoryUrl)
-			return // exit
-		}
-
-		if repositoryType == Git {
-			urlValid = strings.HasSuffix(repositoryUrl, ".git")
-			if !urlValid {
-				fmt.Printf("error: url must be valid git url: %s. %s",
-					repositoryUrl,
-					"example: https://example.com/example.git",
-				)
-				return // exit
-			}
-		}
-
-		// handle credentials
-		err := handleCredentials()
-		if err != nil {
-			fmt.Printf("error: couldn't get credentials %s", err)
-			return
-		}
-
-		// add repository
-		err = addRepo()
-		if err != nil {
-			fmt.Println(err)
-		}
+		style.PrintColoredHeader(fmt.Sprintf("add argocd %s repository", repositoryType))
+		util.Must(
+			util.RunTask(func() error {
+				err := runAddRepo()
+				if err != nil {
+					return err
+				}
+				return nil
+			}, true))
 	},
+}
+
+func runAddRepo() error {
+	// check if repository type not git or helm
+	if repositoryType != Git && repositoryType != Helm {
+		fmt.Println("error: repository type must be git or helm")
+		return nil
+	}
+
+	urlValid := strings.HasPrefix(repositoryUrl, "http://") ||
+		strings.HasPrefix(repositoryUrl, "https://")
+
+	// check if url is valid
+	if !urlValid {
+		fmt.Printf("error: repository url must be valid url: %s", repositoryUrl)
+		return nil
+	}
+
+	if repositoryType == Git {
+		urlValid = strings.HasSuffix(repositoryUrl, ".git")
+		if !urlValid {
+			fmt.Printf("error: url must be valid git url: %s. %s",
+				repositoryUrl,
+				"example: https://example.com/example.git",
+			)
+			return nil
+		}
+	}
+
+	// handle credentials
+	err := handleCredentials()
+	if err != nil {
+		fmt.Printf("error: couldn't get credentials %s", err)
+		return nil
+	}
+
+	// add repository
+	err = addRepo()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return nil
 }
 
 func handleCredentials() error {

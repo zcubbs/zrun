@@ -7,6 +7,8 @@ package traefik
 import (
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/kubectl"
+	"github.com/zcubbs/zrun/style"
+	"github.com/zcubbs/zrun/util"
 )
 
 var ingressRoute = &cobra.Command{
@@ -14,10 +16,15 @@ var ingressRoute = &cobra.Command{
 	Short: "ingressroute Commands",
 	Long:  `This command manages ingressroute.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := addIngressRoute()
-		if err != nil {
-			panic(err)
-		}
+		style.PrintColoredHeader("add traefik ingress-route")
+		util.Must(
+			util.RunTask(func() error {
+				err := addIngressRoute()
+				if err != nil {
+					return err
+				}
+				return nil
+			}, true))
 	},
 }
 

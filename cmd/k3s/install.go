@@ -5,11 +5,11 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package k3s
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/configs"
 	"github.com/zcubbs/zrun/k3s"
 	"github.com/zcubbs/zrun/kubernetes"
+	"github.com/zcubbs/zrun/style"
 	"github.com/zcubbs/zrun/util"
 )
 
@@ -27,22 +27,28 @@ var install = &cobra.Command{
 	Short: "install k3s",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("-------------------------------------------")
-		fmt.Println("installing k3s...")
+		style.PrintColoredHeader("install k3s")
 		verbose := Cmd.Flag("verbose").Value.String() == "true"
-		util.Must(k3s.Install(k3s.Config{
-			Disable:                 disable,
-			TlsSan:                  tlsSan,
-			DataDir:                 dataDir,
-			DefaultLocalStoragePath: volumeStorageDir,
-			WriteKubeconfigMode:     writeKubeconfigMode,
-		}, verbose))
+		util.Must(
+			util.RunTask(func() error {
+				err := k3s.Install(k3s.Config{
+					Disable:                 disable,
+					TlsSan:                  tlsSan,
+					DataDir:                 dataDir,
+					DefaultLocalStoragePath: volumeStorageDir,
+					WriteKubeconfigMode:     writeKubeconfigMode,
+				}, verbose)
+				if err != nil {
+					return err
+				}
 
-		kubeconfig := configs.Config.Kubeconfig.Path
-		ok, err := kubernetes.IsClusterReady(cmd.Context(), kubeconfig)
-		if !ok || err != nil {
-			util.GetTheHeckOut(err)
-		}
+				kubeconfig := configs.Config.Kubeconfig.Path
+				ok, err := kubernetes.IsClusterReady(cmd.Context(), kubeconfig)
+				if !ok || err != nil {
+					return err
+				}
+				return nil
+			}, true))
 	},
 }
 

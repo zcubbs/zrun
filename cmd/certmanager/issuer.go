@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/kubectl"
+	"github.com/zcubbs/zrun/style"
 	"github.com/zcubbs/zrun/util"
 )
 
@@ -51,12 +52,22 @@ var issuer = &cobra.Command{
 	Long:  `setup cert-manager issuer. Note: currently only supports letsencrypt`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose := Cmd.Flag("verbose").Value.String() == "true"
-		util.Must(kubectl.ApplyManifest(letsEncryptIssuerTmpl, Issuer{
-			IssuerName:           issuerName,
-			IssuerEmail:          issuerEmail,
-			IssuerServer:         issuerServer,
-			IngressClassResolver: ingressClassResolver,
-		}, verbose))
+
+		style.PrintColoredHeader("add cert-manager issuer")
+
+		util.Must(
+			util.RunTask(func() error {
+				err := kubectl.ApplyManifest(letsEncryptIssuerTmpl, Issuer{
+					IssuerName:           issuerName,
+					IssuerEmail:          issuerEmail,
+					IssuerServer:         issuerServer,
+					IngressClassResolver: ingressClassResolver,
+				}, verbose)
+				if err != nil {
+					return err
+				}
+				return nil
+			}, true))
 	},
 }
 

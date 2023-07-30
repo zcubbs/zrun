@@ -10,8 +10,9 @@ import (
 	"github.com/zcubbs/zrun/cmd/k8s"
 	"github.com/zcubbs/zrun/configs"
 	"github.com/zcubbs/zrun/helm"
+	"github.com/zcubbs/zrun/style"
+	"github.com/zcubbs/zrun/util"
 	"helm.sh/helm/v3/pkg/cli/values"
-	"os"
 )
 
 var (
@@ -31,23 +32,32 @@ var installChart = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		kubeconfig = configs.Config.Kubeconfig.Path
-
 		// Execute Command
 		verbose := Cmd.Flag("verbose").Value.String() == "true"
-		err := ExecuteInstallChartCmd(helm.InstallChartOptions{
-			Kubeconfig:   kubeconfig,
-			RepoName:     repoName,
-			RepoUrl:      repoUrl,
-			ChartName:    chartName,
-			Namespace:    namespace,
-			ChartVersion: chartVersion,
-			ChartValues:  chartValues,
-			Debug:        verbose,
-		})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+
+		style.PrintColoredHeader(fmt.Sprintf(
+			"install '%s' helm Chart\n",
+			chartName))
+
+		util.Must(
+			util.RunTask(func() error {
+				err := ExecuteInstallChartCmd(helm.InstallChartOptions{
+					Kubeconfig:   kubeconfig,
+					RepoName:     repoName,
+					RepoUrl:      repoUrl,
+					ChartName:    chartName,
+					Namespace:    namespace,
+					ChartVersion: chartVersion,
+					ChartValues:  chartValues,
+					Debug:        verbose,
+				})
+
+				if err != nil {
+					return err
+				}
+
+				return nil
+			}, true))
 	},
 }
 
@@ -76,17 +86,15 @@ func init() {
 }
 
 func ExecuteInstallChartCmd(options helm.InstallChartOptions) error {
-	fmt.Println("-------------------------------------------")
-	fmt.Printf("installing '%s' helm Chart ...\n", options.ChartName)
 	if options.Debug {
-		fmt.Println("kubeconfig: ", options.Kubeconfig)
-		fmt.Println("repoName: ", options.RepoName)
-		fmt.Println("repoUrl: ", options.RepoUrl)
-		fmt.Println("chartName: ", options.ChartName)
-		fmt.Println("namespace: ", options.Namespace)
-		fmt.Println("chartVersion: ", options.ChartVersion)
-		fmt.Printf("chartValues: %+v", options.ChartValues)
-		fmt.Printf("Helm options: %+v\n", options)
+		style.PrintColoredDebug(fmt.Sprintf("kubeconfig: %s", options.Kubeconfig))
+		style.PrintColoredDebug(fmt.Sprintf("repoName: %s", options.RepoName))
+		style.PrintColoredDebug(fmt.Sprintf("repoUrl: %s", options.RepoUrl))
+		style.PrintColoredDebug(fmt.Sprintf("chartName: %s", options.ChartName))
+		style.PrintColoredDebug(fmt.Sprintf("namespace: %s", options.Namespace))
+		style.PrintColoredDebug(fmt.Sprintf("chartVersion: %s", options.ChartVersion))
+		style.PrintColoredDebug(fmt.Sprintf("chartValues: %+v", options.ChartValues))
+		style.PrintColoredDebug(fmt.Sprintf("Helm options: %+v\n", options))
 	}
 
 	// Add helm repo

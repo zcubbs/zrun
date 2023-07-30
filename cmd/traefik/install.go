@@ -10,6 +10,7 @@ import (
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/configs"
 	helmPkg "github.com/zcubbs/zrun/helm"
+	"github.com/zcubbs/zrun/style"
 	"github.com/zcubbs/zrun/util"
 	"helm.sh/helm/v3/pkg/cli/values"
 )
@@ -52,7 +53,17 @@ var install = &cobra.Command{
 	Long:  `install traefik Chart. Note: requires helm`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose := Cmd.Flag("verbose").Value.String() == "true"
-		util.Must(installChart(verbose))
+
+		style.PrintColoredHeader("install traefik")
+
+		util.Must(
+			util.RunTask(func() error {
+				err := installChart(verbose)
+				if err != nil {
+					return err
+				}
+				return nil
+			}, true))
 	},
 }
 

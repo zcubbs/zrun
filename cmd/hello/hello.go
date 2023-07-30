@@ -1,37 +1,27 @@
-// Package k9s
+// Package hello
 /*
 Copyright © 2023 zcubbs https://github.com/zcubbs
 */
-package k9s
+package hello
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/k3s"
 	"github.com/zcubbs/zrun/style"
 	"github.com/zcubbs/zrun/util"
 )
 
-// upgrade represents the list command
-var k9s = &cobra.Command{
-	Use:   "install",
-	Short: "install k9s",
+// Cmd represents the os command
+var Cmd = &cobra.Command{
+	Use:   "hello",
+	Short: "hello is used for test purposes",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose := cmd.Flag("verbose").Value.String() == "true"
-
-		style.PrintColoredHeader("install k9s")
-
 		util.Must(
 			util.RunTask(func() error {
-				err := k3s.InstallK9s(verbose)
-				if err != nil {
-					return err
-				}
+				style.PrintColoredHeader("Hello")
+				style.PrintInfo("world!")
 				return nil
-			}, true))
+			}, verbose))
 	},
-}
-
-func init() {
-	Cmd.AddCommand(k9s)
 }

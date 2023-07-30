@@ -8,7 +8,8 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/kubectl"
-	"os"
+	"github.com/zcubbs/zrun/style"
+	"github.com/zcubbs/zrun/util"
 )
 
 var (
@@ -21,11 +22,17 @@ var addProjectCmd = &cobra.Command{
 	Short: "add project to ArgoCD",
 	Long:  `add project to ArgoCD`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := addProject()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+
+		style.PrintColoredHeader("add argocd project")
+
+		util.Must(
+			util.RunTask(func() error {
+				err := addProject()
+				if err != nil {
+					return err
+				}
+				return nil
+			}, true))
 	},
 }
 
