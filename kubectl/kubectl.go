@@ -42,9 +42,9 @@ func CreateNamespace(kubeconfig string, namespace string) error {
 }
 
 func ApplyManifest(manifestTmpl string, data interface{}, debug bool) error {
-	b, err := ApplyTmpl(manifestTmpl, data)
+	b, err := ApplyTmpl(manifestTmpl, data, debug)
 	if err != nil {
-		return fmt.Errorf("failed to apply template \n %v", err)
+		return fmt.Errorf("failed to apply template \n %w", err)
 	}
 
 	// generate tmp file name
@@ -52,28 +52,26 @@ func ApplyManifest(manifestTmpl string, data interface{}, debug bool) error {
 		time.Unix(time.Now().Unix(), 0).Format("20060102150405"),
 	)
 
-	if debug {
-		// write tmp manifest
-		err = os.WriteFile(fn, b, 0644)
-		if err != nil {
-			return fmt.Errorf("failed to write tmp manifest \n %v", err)
-		}
+	// write tmp manifest
+	err = os.WriteFile(fn, b, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write tmp manifest \n %w", err)
 	}
 
 	err = bash.ExecuteCmd("kubectl", debug, "apply", "-f", fn)
 	if err != nil {
-		return fmt.Errorf("failed to apply manifest \n %s", err)
+		return fmt.Errorf("failed to apply manifest \n %w", err)
 	}
 
 	// delete tmp manifest
 	err = os.Remove(fn)
 	if err != nil {
-		return fmt.Errorf("failed to delete tmp manifest \n %v", err)
+		return fmt.Errorf("failed to delete tmp manifest \n %w", err)
 	}
 	return nil
 }
 
-func ApplyTmpl(tmplStr string, tmplData interface{}) ([]byte, error) {
+func ApplyTmpl(tmplStr string, tmplData interface{}, debug bool) ([]byte, error) {
 	tmpl, err := template.New("tmpManifest").Parse(tmplStr)
 	if err != nil {
 		return nil, err
@@ -83,7 +81,9 @@ func ApplyTmpl(tmplStr string, tmplData interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	fmt.Println(buf.String())
-
+	// debug
+	if debug {
+		fmt.Println(buf.String())
+	}
 	return buf.Bytes(), nil
 }

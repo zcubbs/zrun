@@ -37,7 +37,6 @@ var install = &cobra.Command{
 	Short: "install argo-cd Chart",
 	Long:  `install argo-cd Chart. Note: requires helm`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		style.PrintColoredHeader("install argocd")
 
 		util.Must(

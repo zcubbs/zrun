@@ -20,7 +20,11 @@ func RunTask(task Task, spinner bool) error {
 		err = task()
 	}
 
-	style.PrintSuccess("completed")
+	if err != nil {
+		style.PrintError("failed")
+	} else {
+		style.PrintSuccess("completed")
+	}
 	return err
 }
 

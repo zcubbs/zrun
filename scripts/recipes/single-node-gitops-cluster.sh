@@ -21,6 +21,10 @@ k3s_install() {
        --disable "traefik" || { echo "k3s installation failed"; exit 1; }
 }
 
+k3s_uninstall() {
+    sudo zrun k3s uninstall && sleep 2 || { echo "k3s uninstallation failed"; exit 1; }
+}
+
 k9s_install() {
     sudo zrun k9s install || { echo "k9s installation failed"; exit 1; }
 }
@@ -38,8 +42,6 @@ traefik_install() {
     sudo zrun traefik install \
         --defaults \
         --insecure \
-        --proxy \
-        --forwardedHeaders \
         --ingressProvider "cert-manager-resolver" \
         || { echo "traefik installation failed"; exit 1; }
 }
@@ -50,9 +52,9 @@ argocd_install() {
 }
 
 argocd_add_project() {
-    sudo zrun argocd add-project \
+    sudo zrun argo add-project \
         --name "default" \
-        --upsert || { echo "argocd project creation failed"; exit 1; }
+        || { echo "argocd project creation failed"; exit 1; }
 }
 
 # values "argo-git-repo-username" and "argo-git-repo-password" are stored in vault
@@ -61,9 +63,9 @@ argocd_add_project() {
 # sudo zrun vault add --key "argo-git-repo-username" --val "usernameXYZ"
 # sudo zrun vault add --key "argo-git-repo-password" --val "password123"
 argocd_add_repos() {
-    sudo zrun argocd add-repo \
+    sudo zrun argo add-repository \
         --name "gitops" \
-        --url "https://github.com/zcubbs/zrun-gitops-test-repo" \
+        --url "https://github.com/zcubbs/zrun-gitops-test-repo.git" \
         --type "git" \
         --use-vault \
         --username "argo-git-repo-username" \
@@ -72,16 +74,14 @@ argocd_add_repos() {
 
 }
 
-wait_for_cluster() {
-    echo "-------------------------------------------"
-    echo "waiting for cluster to be ready..."
-    until kubectl get nodes; do sleep 1; done
-}
-
-wait_for_argocd() {
-    echo "-------------------------------------------"
-    echo "waiting for argo-cd to be ready..."
-    until kubectl -n argo-cd get pods | grep Running; do sleep 1; done
+argocd_add_app() {
+    sudo zrun argo add-application \
+        --app-name "hub-chart" \
+        --repo "https://github.com/zcubbs/zrun-gitops-test-repo.git" \
+        --helm \
+        --path "hub/chart" \
+        --app-namespace "hub" \
+        || { echo "argocd app creation failed"; exit 1; }
 }
 
 run_k9s() {
@@ -90,15 +90,16 @@ run_k9s() {
 
 main() {
 #    zrun_info
+#    k3s_uninstall
     k3s_install
     k9s_install
     helm_install
-#    wait_for_cluster
     cert_manager_install
     traefik_install
     argocd_install
-#    wait_for_argocd
-#    run_k9s
+    argocd_add_project
+    argocd_add_repos
+    argocd_add_app
 }
 
 main

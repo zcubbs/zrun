@@ -50,6 +50,16 @@ func PrintColoredError(text string) {
 	fmt.Println(style.Render("ERR") + " " + text)
 }
 
+func PrintError(text string) {
+	var style = lipgloss.NewStyle().
+		Align(lipgloss.Left).
+		Foreground(lipgloss.Color("#FF3B30")). // red
+		Padding(0, 1).
+		Width(6)
+
+	fmt.Println(style.Render("err") + " " + text)
+}
+
 func PrintColoredWarning(text string) {
 	var style = lipgloss.NewStyle().
 		Align(lipgloss.Left).

@@ -7,10 +7,10 @@ package argo
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/zcubbs/zrun/cmd/vault"
 	"github.com/zcubbs/zrun/kubectl"
 	"github.com/zcubbs/zrun/style"
 	"github.com/zcubbs/zrun/util"
-	zvault "github.com/zcubbs/zrun/vault"
 	"os"
 	"strings"
 )
@@ -33,7 +33,7 @@ const Helm = "helm"
 
 // repository add a repository to ArgoCD
 var repository = &cobra.Command{
-	Use:   "repository",
+	Use:   "add-repository",
 	Short: "add repository to ArgoCD",
 	Long:  `add repository to ArgoCD`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -61,32 +61,29 @@ func runAddRepo() error {
 
 	// check if url is valid
 	if !urlValid {
-		fmt.Printf("error: repository url must be valid url: %s", repositoryUrl)
-		return nil
+		return fmt.Errorf("error: repository url must be valid url: %s", repositoryUrl)
 	}
 
 	if repositoryType == Git {
 		urlValid = strings.HasSuffix(repositoryUrl, ".git")
 		if !urlValid {
-			fmt.Printf("error: url must be valid git url: %s. %s",
+			return fmt.Errorf("error: url must be valid git url: %s. %s",
 				repositoryUrl,
 				"example: https://example.com/example.git",
 			)
-			return nil
 		}
 	}
 
 	// handle credentials
 	err := handleCredentials()
 	if err != nil {
-		fmt.Printf("error: couldn't get credentials %s", err)
-		return nil
+		return fmt.Errorf("error: couldn't get credentials %s", err)
 	}
 
 	// add repository
 	err = addRepo()
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
 	return nil
@@ -100,31 +97,7 @@ func handleCredentials() error {
 
 	// check if use vault
 	if repositoryUseVault {
-		if repositoryUsername == "" {
-			return fmt.Errorf("error: username vault key is empty")
-		}
-
-		if repositoryPassword == "" {
-			return fmt.Errorf("error: password vault key is empty")
-		}
-
-		// get username and password from vault
-		sv, err := zvault.NewSecretVault()
-		if err != nil {
-			return err
-		}
-
-		repositoryPassword, err = sv.GetSecret(repositoryPassword)
-		if err != nil {
-			return err
-		}
-
-		repositoryUsername, err = sv.GetSecret(repositoryUsername)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return handleVaultCredentials()
 	}
 
 	// check if use env vars
@@ -140,6 +113,30 @@ func handleCredentials() error {
 		repositoryUsername = os.Getenv(repositoryUsername)
 		repositoryPassword = os.Getenv(repositoryPassword)
 		return nil
+	}
+
+	return nil
+}
+
+func handleVaultCredentials() error {
+	if repositoryUsername == "" {
+		return fmt.Errorf("error: username vault key is empty")
+	}
+
+	if repositoryPassword == "" {
+		return fmt.Errorf("error: password vault key is empty")
+	}
+
+	var err error
+
+	repositoryPassword, err = vault.GetSecret(repositoryPassword)
+	if err != nil {
+		return err
+	}
+
+	repositoryUsername, err = vault.GetSecret(repositoryUsername)
+	if err != nil {
+		return err
 	}
 
 	return nil
