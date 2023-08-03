@@ -99,7 +99,7 @@ func About() {
 	figure.NewColorFigure("zrun", "morse", "red", true).Print()
 	fmt.Println(getVersion())
 	fmt.Println(`
-is a comprehensive command-line interface (CLI) that provides 
+/zrun/ is a comprehensive command-line interface (CLI) that provides 
 a range of functionalities from installing k3s, 
 managing Helm Deployments & Argocd applications to 
 Git operations and more...`)

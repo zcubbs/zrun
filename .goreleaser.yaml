@@ -17,7 +17,7 @@ builds:
     dir: .
     main: ./main.go
     ldflags:
-      - -s -w -X defaults.Version={{.Version}} -X defaults.Commit={{.Commit}} -X defaults.Date={{.Date}}
+      - -s -w -X github.com/zcubbs/zrun/defaults.Version={{.Version}} -X github.com/zcubbs/zrun/defaults.Commit={{.Commit}} -X github.com/zcubbs/zrun/defaults.Date={{.Date}}
 
 archives:
   - name_template: >-
