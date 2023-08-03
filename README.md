@@ -14,11 +14,78 @@
 
 ---
 
+**zrun** is a comprehensive command-line interface (CLI) that provides a range of functionalities from installing k3s, managing Helm Deployments & Argocd applications to Git operations and more...
+
 ## Install
 
 ```bash
-curl -sfL https://raw.githubusercontent.com/zcubbs/zrun/main/scripts/install/install.sh | sh
+curl -sfL https://raw.githubusercontent.com/zcubbs/zrun/main/scripts/install/install.sh | bash
 ```
+
+## Available Commands
+
+- `about` - Print the info about ZRun
+- `argo` - ArgoCD Commands
+- `awx` - AWX Management Commands
+- `certmanager` - cert-manager Commands
+- `completion` - Generate the autocompletion script for the specified shell
+- `config` - List CLI configuration
+- `git` - Git Helper Commands
+- `hello` - Used for test purposes
+- `helm` - Helm Application Deployment/Control Commands
+- `help` - Help about any command
+- `info` - A palette that contains system info commands
+- `k3s` - K3s management commands
+- `k8s` - Kubernetes Management Commands
+- `k9s` - Run K9s
+- `os` - OS Helper Commands
+- `traefik` - traefik Commands
+- `upgrade` - Used to upgrade ZRun to the latest version
+- `vault` - Vault Helper Commands
+- `version` - Print the version number of ZRun
+
+### Global Flags
+
+- `-h, --help` - Help for this command
+- `-v, --verbose` - Verbose output
+
+### Sub-Commands 
+
+- `k3s` - K3s management commands
+  - **Usage**: `k3s [flags]` or `k3s [command]`
+  - **Available Sub-Commands**:
+    - `install` - Install k3s
+    - `uninstall` - Uninstall k3s
+
+- `argo` - ArgoCD Commands
+  - **Usage**: `argo [flags]` or `argo [command]`
+  - **Available Sub-Commands**:
+    - `add-application` - Manage ArgoCD Applications
+    - `add-project` - Add project to ArgoCD
+    - `add-repository` - Add repository to ArgoCD
+    - `install` - Install argo-cd Chart
+  - **Flags**:
+    - `-n, --namespace string` - Namespace (default "argo-cd")
+
+- `certmanager` - cert-manager Commands
+  - **Usage**: `certmanager [flags]` or `certmanager [command]`
+  - **Available Sub-Commands**:
+    - `install` - Install cert-manager Chart
+    - `issuer` - Setup cert-manager issuer
+
+- `traefik` - traefik Commands
+  - **Usage**: `traefik [flags]` or `traefik [command]`
+  - **Available Sub-Commands**:
+    - `ingressroute` - Create IngressRoute
+    - `install` - Install traefik Chart
+
+- `helm` - Helm Application Deployment/Control Commands
+  - **Usage**: `helm [flags]` or `helm [command]`
+  - **Available Sub-Commands**:
+    - `install-chart` - List all helm releases
+    - `install-helm` - Install helm CLI
+    - `list` - List all helm releases
+    - `uninstall-chart` - List all helm releases
 
 ## Contributing
 
