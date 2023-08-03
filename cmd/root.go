@@ -46,7 +46,7 @@ var (
 		Short: "Print the version number of zrun",
 		Long:  "",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("zrun version %s\n", defaults.Version)
+			fmt.Println(getVersion())
 		},
 	}
 
@@ -97,8 +97,16 @@ func init() {
 func About() {
 	figure.NewColorFigure("ZRUN", "colossal", "red", true).Print()
 	figure.NewColorFigure("zrun", "morse", "red", true).Print()
-	fmt.Printf("Version: %s\n", defaults.Version)
-	fmt.Println("<zrun> is a swiss army knife cli for devops engineers")
+	fmt.Println(getVersion())
+	fmt.Println(`
+is a comprehensive command-line interface (CLI) that provides 
+a range of functionalities from installing k3s, 
+managing Helm Deployments & Argocd applications to 
+Git operations and more...`)
 	fmt.Println("Copyright (c) 2023 zakaria.elbouwab (zcubbs)")
 	fmt.Println("Repository: https://github.com/zcubbs/zrun")
+}
+
+func getVersion() string {
+	return fmt.Sprintf("%s-%s-%s", defaults.Version, defaults.Commit, defaults.Date)
 }

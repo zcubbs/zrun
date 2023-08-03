@@ -5,10 +5,22 @@ Copyright © 2023 zcubbs https://github.com/zcubbs
 package traefik
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/kubectl"
 	"github.com/zcubbs/zrun/style"
 	"github.com/zcubbs/zrun/util"
+)
+
+var (
+	ingressRouteName        string   // ingressroute name
+	ingressRouteNamespace   string   // ingressroute namespace
+	ingressRouteEntryPoints []string // ingressroute entrypoints
+	ingressRoutePath        string   // ingressroute path
+	ingressRouteService     string   // ingressroute service
+	ingressRoutePort        string   // ingressroute port
+	ingressRouteTls         bool     // ingressroute tls
+	ingressRouteTlsSecret   string   // ingressroute tls secret
 )
 
 var ingressRoute = &cobra.Command{
@@ -51,7 +63,7 @@ spec:
       {{- end }}
   {{- end }}
 
-  {{ if .Tls }}
+  {{ if .Tls.IsEnabled }}
   tls:
 	certResolver: {{ .Tls.CertResolver }}
   {{- end }}
@@ -72,33 +84,33 @@ type traefikIngressRouteRule struct {
 
 type traefikIngressRouteRuleService struct {
 	ServiceName string
-	ServicePort int
+	ServicePort string
 }
 
 type traefikIngressRouteTls struct {
+	IsEnabled    bool
 	CertResolver string
 }
 
 func addIngressRoute() error {
 	ingress := &traefikIngressRoute{
-		Name:      "test",
-		Namespace: "default",
-		EntryPoints: []string{
-			"websecure",
-		},
+		Name:        ingressRouteName,
+		Namespace:   ingressRouteNamespace,
+		EntryPoints: ingressRouteEntryPoints,
 		Rules: []traefikIngressRouteRule{
 			{
-				Host: "test.com",
+				Host: ingressRoutePath,
 				Services: []traefikIngressRouteRuleService{
 					{
-						ServiceName: "test",
-						ServicePort: 80,
+						ServiceName: ingressRouteService,
+						ServicePort: ingressRoutePort,
 					},
 				},
 			},
 		},
 		Tls: &traefikIngressRouteTls{
-			CertResolver: "default",
+			IsEnabled:    ingressRouteTls,
+			CertResolver: ingressRouteTlsSecret,
 		},
 	}
 
@@ -113,5 +125,40 @@ func addIngressRoute() error {
 }
 
 func init() {
+	ingressRoute.Flags().StringVarP(&ingressRouteName, "name", "n", "", "ingressroute name")
+	ingressRoute.Flags().StringVarP(&ingressRouteNamespace, "namespace", "s", "", "ingressroute namespace")
+	ingressRoute.Flags().StringSliceVarP(&ingressRouteEntryPoints, "entrypoints", "e", []string{}, "ingressroute entrypoints")
+	ingressRoute.Flags().StringVarP(&ingressRoutePath, "path", "p", "", "ingressroute path")
+	ingressRoute.Flags().StringVarP(&ingressRouteService, "service", "S", "", "ingressroute service")
+	ingressRoute.Flags().StringVarP(&ingressRoutePort, "port", "P", "", "ingressroute port")
+	ingressRoute.Flags().BoolVarP(&ingressRouteTls, "tls", "t", false, "ingressroute tls")
+	ingressRoute.Flags().StringVarP(&ingressRouteTlsSecret, "tls-secret", "T", "", "ingressroute tls secret")
+
+	// required flags
+	err := ingressRoute.MarkFlagRequired("name")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = ingressRoute.MarkFlagRequired("namespace")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = ingressRoute.MarkFlagRequired("entrypoints")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = ingressRoute.MarkFlagRequired("path")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = ingressRoute.MarkFlagRequired("service")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = ingressRoute.MarkFlagRequired("port")
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	Cmd.AddCommand(ingressRoute)
 }

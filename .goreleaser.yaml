@@ -12,10 +12,12 @@ builds:
 #      - darwin
     goarch:
       - amd64
-#      - arm64
+      - arm64
     id: "zrun"
     dir: .
     main: ./main.go
+    ldflags:
+      - -s -w -X defaults.Version={{.Version}} -X defaults.Commit={{.Commit}} -X defaults.Date={{.Date}}
 
 archives:
   - name_template: >-
