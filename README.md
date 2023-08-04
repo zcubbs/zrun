@@ -22,6 +22,12 @@
 curl -sfL https://raw.githubusercontent.com/zcubbs/zrun/main/scripts/install/install.sh | bash
 ```
 
+---
+
+## Demo
+
+![](docs/img/demo.gif)
+
 ## Available Commands
 
 - `about` - Print the info about ZRun
