@@ -8,7 +8,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/git"
+	"github.com/zcubbs/zrun/pkg/git"
 	"golang.org/x/term"
 	"os"
 	"strings"

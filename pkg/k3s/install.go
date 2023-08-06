@@ -6,8 +6,8 @@ package k3s
 
 import (
 	"fmt"
-	"github.com/zcubbs/zrun/bash"
-	osx "github.com/zcubbs/zrun/os"
+	"github.com/zcubbs/zrun/pkg/bash"
+	osx "github.com/zcubbs/zrun/pkg/os"
 	"os"
 	"text/template"
 )

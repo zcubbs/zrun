@@ -5,7 +5,7 @@ package main
 
 import (
 	"github.com/zcubbs/zrun/cmd"
-	"github.com/zcubbs/zrun/configs"
+	"github.com/zcubbs/zrun/internal/configs"
 )
 
 func init() {

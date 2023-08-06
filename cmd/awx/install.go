@@ -7,12 +7,12 @@ package awx
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/bash"
 	"github.com/zcubbs/zrun/cmd/helm"
-	"github.com/zcubbs/zrun/configs"
-	helmPkg "github.com/zcubbs/zrun/helm"
-	"github.com/zcubbs/zrun/kubectl"
-	"github.com/zcubbs/zrun/util"
+	"github.com/zcubbs/zrun/internal/configs"
+	"github.com/zcubbs/zrun/pkg/bash"
+	helmPkg "github.com/zcubbs/zrun/pkg/helm"
+	"github.com/zcubbs/zrun/pkg/kubectl"
+	"github.com/zcubbs/zrun/pkg/util"
 	"helm.sh/helm/v3/pkg/cli/values"
 )
 
@@ -109,6 +109,6 @@ func deployInstance(instanceTmplStr, secretTmplStr string, verbose bool) error {
 	return nil
 }
 
-func configureAwx(verbose bool) error {
+func configureAwx(_ bool) error {
 	return nil
 }

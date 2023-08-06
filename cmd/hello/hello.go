@@ -6,8 +6,8 @@ package hello
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/style"
-	"github.com/zcubbs/zrun/util"
+	"github.com/zcubbs/zrun/pkg/style"
+	"github.com/zcubbs/zrun/pkg/util"
 )
 
 // Cmd represents the os command

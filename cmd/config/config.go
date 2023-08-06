@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/configs"
+	"github.com/zcubbs/zrun/internal/configs"
 )
 
 // Cmd represents the config command

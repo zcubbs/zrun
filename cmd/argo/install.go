@@ -8,11 +8,11 @@ import (
 	"context"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/cmd/helm"
-	"github.com/zcubbs/zrun/configs"
-	helmPkg "github.com/zcubbs/zrun/helm"
-	"github.com/zcubbs/zrun/kubernetes"
-	"github.com/zcubbs/zrun/style"
-	"github.com/zcubbs/zrun/util"
+	"github.com/zcubbs/zrun/internal/configs"
+	helmPkg "github.com/zcubbs/zrun/pkg/helm"
+	"github.com/zcubbs/zrun/pkg/kubernetes"
+	"github.com/zcubbs/zrun/pkg/style"
+	"github.com/zcubbs/zrun/pkg/util"
 	"helm.sh/helm/v3/pkg/cli/values"
 )
 

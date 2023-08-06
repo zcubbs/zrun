@@ -6,11 +6,11 @@ package k3s
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/configs"
-	"github.com/zcubbs/zrun/k3s"
-	"github.com/zcubbs/zrun/kubernetes"
-	"github.com/zcubbs/zrun/style"
-	"github.com/zcubbs/zrun/util"
+	"github.com/zcubbs/zrun/internal/configs"
+	"github.com/zcubbs/zrun/pkg/k3s"
+	"github.com/zcubbs/zrun/pkg/kubernetes"
+	"github.com/zcubbs/zrun/pkg/style"
+	"github.com/zcubbs/zrun/pkg/util"
 )
 
 var (

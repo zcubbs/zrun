@@ -7,8 +7,8 @@ package helm
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/configs"
-	"github.com/zcubbs/zrun/helm"
+	"github.com/zcubbs/zrun/internal/configs"
+	"github.com/zcubbs/zrun/pkg/helm"
 	"os"
 )
 

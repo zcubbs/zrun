@@ -7,7 +7,7 @@ package os
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	zos "github.com/zcubbs/zrun/os"
+	zos "github.com/zcubbs/zrun/pkg/os"
 )
 
 // install represents the list command

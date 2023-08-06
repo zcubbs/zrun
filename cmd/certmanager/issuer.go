@@ -7,9 +7,9 @@ package certmanager
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/kubectl"
-	"github.com/zcubbs/zrun/style"
-	"github.com/zcubbs/zrun/util"
+	"github.com/zcubbs/zrun/pkg/kubectl"
+	"github.com/zcubbs/zrun/pkg/style"
+	"github.com/zcubbs/zrun/pkg/util"
 )
 
 const letsEncryptIssuerTmpl = `---

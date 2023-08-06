@@ -24,7 +24,7 @@ import (
 	"github.com/zcubbs/zrun/cmd/traefik"
 	"github.com/zcubbs/zrun/cmd/upgrade"
 	"github.com/zcubbs/zrun/cmd/vault"
-	"github.com/zcubbs/zrun/defaults"
+	"github.com/zcubbs/zrun/internal/defaults"
 	"os"
 )
 

@@ -3,8 +3,8 @@ package k8s
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/configs"
-	"github.com/zcubbs/zrun/kubectl"
+	"github.com/zcubbs/zrun/internal/configs"
+	"github.com/zcubbs/zrun/pkg/kubectl"
 	"os"
 )
 

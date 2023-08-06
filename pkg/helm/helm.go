@@ -6,7 +6,7 @@ package helm
 
 import (
 	"fmt"
-	"github.com/zcubbs/zrun/bash"
+	"github.com/zcubbs/zrun/pkg/bash"
 )
 
 const (

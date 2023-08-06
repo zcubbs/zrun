@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/configs"
-	"github.com/zcubbs/zrun/helm"
-	zTime "github.com/zcubbs/zrun/time"
+	"github.com/zcubbs/zrun/internal/configs"
+	"github.com/zcubbs/zrun/pkg/helm"
+	zTime "github.com/zcubbs/zrun/pkg/time"
 	"os"
 	"time"
 )

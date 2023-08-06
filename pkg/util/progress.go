@@ -3,7 +3,7 @@ package util
 import (
 	"context"
 	"fmt"
-	"github.com/zcubbs/zrun/style"
+	"github.com/zcubbs/zrun/pkg/style"
 	"os"
 	"os/exec"
 	"sync"

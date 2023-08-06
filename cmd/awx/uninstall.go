@@ -7,11 +7,11 @@ package awx
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/bash"
-	"github.com/zcubbs/zrun/configs"
-	"github.com/zcubbs/zrun/helm"
-	"github.com/zcubbs/zrun/kubectl"
-	"github.com/zcubbs/zrun/util"
+	"github.com/zcubbs/zrun/internal/configs"
+	"github.com/zcubbs/zrun/pkg/bash"
+	"github.com/zcubbs/zrun/pkg/helm"
+	"github.com/zcubbs/zrun/pkg/kubectl"
+	"github.com/zcubbs/zrun/pkg/util"
 )
 
 // upgrade represents the list command

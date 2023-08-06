@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/cmd/k8s"
-	"github.com/zcubbs/zrun/configs"
-	"github.com/zcubbs/zrun/helm"
-	"github.com/zcubbs/zrun/style"
-	"github.com/zcubbs/zrun/util"
+	"github.com/zcubbs/zrun/internal/configs"
+	"github.com/zcubbs/zrun/pkg/helm"
+	"github.com/zcubbs/zrun/pkg/style"
+	"github.com/zcubbs/zrun/pkg/util"
 	"helm.sh/helm/v3/pkg/cli/values"
 )
 

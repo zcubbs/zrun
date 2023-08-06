@@ -6,7 +6,7 @@ package k3s
 
 import (
 	"fmt"
-	"github.com/zcubbs/zrun/bash"
+	"github.com/zcubbs/zrun/pkg/bash"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"runtime"

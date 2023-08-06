@@ -9,7 +9,7 @@
   _ _ . .  . _ .  . . _  _ .
 </p>
 <p align="center">
-  <img width="750" src="_assets/zrun_alt.jpg">
+  <img width="550" src="docs/img/zrun_dark.jpg">
 </p>
 
 ---
