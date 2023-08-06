@@ -97,16 +97,29 @@ func init() {
 func About() {
 	figure.NewColorFigure("ZRUN", "colossal", "red", true).Print()
 	figure.NewColorFigure("zrun", "morse", "red", true).Print()
-	fmt.Println(getVersion())
-	fmt.Println(`
-/zrun/ is a comprehensive command-line interface (CLI) that provides 
-a range of functionalities from installing k3s, 
-managing Helm Deployments & Argocd applications to 
-Git operations and more...`)
+	fmt.Println(getFullVersion())
+	fmt.Println(getDescription())
 	fmt.Println("Copyright (c) 2023 zakaria.elbouwab (zcubbs)")
 	fmt.Println("Repository: https://github.com/zcubbs/zrun")
 }
 
 func getVersion() string {
-	return fmt.Sprintf("%s-%s-%s", defaults.Version, defaults.Commit, defaults.Date)
+	return fmt.Sprintf("v%s", defaults.Version)
+}
+
+func getFullVersion() string {
+	return fmt.Sprintf(`
+Version: v%s
+Commit: %s
+Date: %s
+`, defaults.Version, defaults.Commit, defaults.Date)
+}
+
+func getDescription() string {
+	return fmt.Sprintf(`
+/zrun/ is a comprehensive command-line interface (CLI) that provides
+a range of functionalities from installing k3s,
+managing Helm Deployments & Argocd applications to
+Git operations and more...
+`)
 }
