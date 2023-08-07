@@ -18,7 +18,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/zcubbs/dagger-utils v1.0.10
 	golang.org/x/term v0.10.0
-	golang.org/x/text v0.11.0
+	golang.org/x/text v0.12.0
 	gopkg.in/yaml.v2 v2.4.0
 	helm.sh/helm/v3 v3.12.2
 	k8s.io/api v0.27.4
