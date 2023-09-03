@@ -264,3 +264,4 @@ cython_debug/
 bin/
 **/.vagrant/
 
+/gosec-results.json

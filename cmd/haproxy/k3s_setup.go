@@ -107,18 +107,16 @@ frontend k3s_http
 	acl k3s hdr_end(host) -i {{ .K3sDomain }}
 
 	use_backend 	k3s_ingress_http if k3s
-	default_backend k3s_ingress_http
 
 frontend k3s_https
 	bind *:443
 	mode tcp
 
-	acl k3s_api hdr_end(host) -i {{ .K3sApiDomain }}
-	acl k3s 	hdr_end(host) -i {{ .K3sDomain }}
+	acl k3s_api if { req.ssl_sni -i  {{ .K3sApiDomain }} }
+	acl k3s 	if { req.ssl_sni -m end -i  {{ .K3sDomain }} }
 
 	use_backend 	k3s_api 			if k3s_api
-	use_backend 	k3s_ingress_http 	if k3s
-	default_backend k3s_ingress_https
+	use_backend 	k3s_ingress_https 	if k3s
 
 backend k3s_api
 	balance roundrobin
