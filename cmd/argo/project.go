@@ -67,7 +67,7 @@ func addProject() error {
 	// create project
 	project := &argoAppProject{
 		Name:      projectName,
-		Namespace: "argo-cd",
+		Namespace: namespace,
 	}
 
 	// Apply template
