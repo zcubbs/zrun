@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/pkg/kubectl"
+	xos "github.com/zcubbs/zrun/pkg/os"
 	"github.com/zcubbs/zrun/pkg/style"
 	"github.com/zcubbs/zrun/pkg/util"
 	"os"
@@ -71,6 +72,10 @@ func configureHaproxyK3s(verbose bool) error {
 		return fmt.Errorf("failed to write haproxy config file \n %w", err)
 	}
 
+	err = xos.RestartSystemdService("haproxy", verbose)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
