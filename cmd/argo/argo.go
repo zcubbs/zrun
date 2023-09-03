@@ -11,12 +11,12 @@ import (
 
 const (
 	ArgocdString                                 = "argocd"
-	ArgocdServerDeploymentName                   = "argocd-server"
-	ArgocdRepoServerDeploymentName               = "argocd-repo-server"
-	ArgocdRedisDeploymentName                    = "argocd-redis"
-	ArgocdDexServerDeploymentName                = "argocd-dex-server"
-	ArgocdApplicationsetControllerDeploymentName = "argocd-applicationset-controller"
-	ArgocdNotificationsControllerDeploymentName  = "argocd-notifications-controller"
+	ArgocdServerDeploymentName                   = "argo-cd-argocd-server"
+	ArgocdRepoServerDeploymentName               = "argo-cd-argocd-repo-server"
+	ArgocdRedisDeploymentName                    = "argo-cd-argocd-redis"
+	ArgocdDexServerDeploymentName                = "argo-cd-argocd-dex-server"
+	ArgocdApplicationsetControllerDeploymentName = "argo-cd-argocd-applicationset-controller"
+	ArgocdNotificationsControllerDeploymentName  = "argo-cd-argocd-notifications-controller"
 )
 
 var (
