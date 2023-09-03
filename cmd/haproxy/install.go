@@ -32,13 +32,13 @@ var install = &cobra.Command{
 	},
 }
 
-func installHaproxy(_ bool) error {
+func installHaproxy(verbose bool) error {
 	err := xos.Install("haproxy")
 	if err != nil {
 		return err
 	}
 
-	err = xos.RestartSystemdService("haproxy")
+	err = xos.RestartSystemdService("haproxy", verbose)
 	if err != nil {
 		return err
 	}
