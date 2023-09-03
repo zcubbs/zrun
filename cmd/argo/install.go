@@ -16,6 +16,10 @@ import (
 	"helm.sh/helm/v3/pkg/cli/values"
 )
 
+const (
+	ArgocdChartName = "argo-cd"
+)
+
 var (
 	chartVersion string
 	options      values.Options
@@ -46,7 +50,7 @@ func installChart(ctx context.Context) error {
 
 	options := helmPkg.InstallChartOptions{
 		Kubeconfig:   kubeconfig,
-		ChartName:    ArgocdString,
+		ChartName:    ArgocdChartName,
 		RepoName:     ArgocdString,
 		RepoUrl:      "https://argoproj.github.io/argo-helm",
 		Namespace:    namespace,
