@@ -16,16 +16,6 @@ import (
 	"helm.sh/helm/v3/pkg/cli/values"
 )
 
-const (
-	ArgocdString                                 = "argo-cd"
-	ArgocdServerDeploymentName                   = "argo-cd-argocd-server"
-	ArgocdRepoServerDeploymentName               = "argo-cd-argocd-repo-server"
-	ArgocdRedisDeploymentName                    = "argo-cd-argocd-redis"
-	ArgocdDexServerDeploymentName                = "argo-cd-argocd-dex-server"
-	ArgocdApplicationsetControllerDeploymentName = "argo-cd-argocd-applicationset-controller"
-	ArgocdNotificationsControllerDeploymentName  = "argo-cd-argocd-notifications-controller"
-)
-
 var (
 	chartVersion string
 	options      values.Options
@@ -59,7 +49,7 @@ func installChart(ctx context.Context) error {
 		ChartName:    ArgocdString,
 		RepoName:     ArgocdString,
 		RepoUrl:      "https://argoproj.github.io/argo-helm",
-		Namespace:    ArgocdString,
+		Namespace:    namespace,
 		ChartVersion: chartVersion,
 		ChartValues:  options,
 		Debug:        verbose,

@@ -9,6 +9,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	ArgocdString                                 = "argocd"
+	ArgocdServerDeploymentName                   = "argocd-server"
+	ArgocdRepoServerDeploymentName               = "argocd-repo-server"
+	ArgocdRedisDeploymentName                    = "argocd-redis"
+	ArgocdDexServerDeploymentName                = "argocd-dex-server"
+	ArgocdApplicationsetControllerDeploymentName = "argocd-applicationset-controller"
+	ArgocdNotificationsControllerDeploymentName  = "argocd-notifications-controller"
+)
+
 var (
 	namespace string // repository namespace
 )
@@ -27,5 +37,5 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	Cmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "argo-cd", "namespace")
+	Cmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", ArgocdString, "namespace")
 }
