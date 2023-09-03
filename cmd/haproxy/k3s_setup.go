@@ -89,9 +89,6 @@ func init() {
 var haproxyK3sConfigTmpl = `
 defaults	
 	log	global
-	mode	http
-	option	httplog
-	option	dontlognull
 	timeout http-request 20s
 	timeout connect 5000
 	timeout client  50000 # ddos protection
@@ -115,7 +112,7 @@ frontend k3s_https
 	acl k3s 	hdr_end(host) -i {{ .K3sDomain }}
 
 	use_backend 	k3s_api 			if k3s_api
-	use_backend 	k3s_ingress 		if k3s
+	use_backend 	k3s_ingress_http 	if k3s
 	default_backend k3s_ingress_https
 
 backend k3s_api

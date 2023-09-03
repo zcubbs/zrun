@@ -37,6 +37,11 @@ func installHaproxy(_ bool) error {
 	if err != nil {
 		return err
 	}
+
+	err = xos.RestartSystemdService("haproxy")
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
