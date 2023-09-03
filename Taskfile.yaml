@@ -18,7 +18,7 @@ tasks:
   build:
     deps: ["windows", "linux", "darwin"]
     cmds:
-      - echo version: {{.VERSION}}
+      - cmd: echo version {{.VERSION}}
 
   windows:
     cmds:

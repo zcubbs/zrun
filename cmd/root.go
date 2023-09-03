@@ -116,10 +116,10 @@ Date: %s
 }
 
 func getDescription() string {
-	return fmt.Sprintf(`
+	return `
 /zrun/ is a comprehensive command-line interface (CLI) that provides
 a range of functionalities from installing k3s,
 managing Helm Deployments & Argocd applications to
 Git operations and more...
-`)
+`
 }
