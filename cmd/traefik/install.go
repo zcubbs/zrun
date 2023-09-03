@@ -88,8 +88,8 @@ func installChart(verbose bool) error {
 
 	// check if useDefaults is true, if so, use default values
 	if useDefaults {
-		wa := fmt.Sprintf("%s=:%s", "--entrypoints.web.address", endpointWeb)
-		wsa := fmt.Sprintf("%s=:%s", "--entrypoints.websecure.address", endpointWebsecure)
+		wa := fmt.Sprintf("%s=%s", "ports.web.exposedPort", endpointWeb)
+		wsa := fmt.Sprintf("%s=%s", "ports.websecure.exposedPort", endpointWebsecure)
 		options.Values = append(options.Values, "logs.access.enabled=false")
 		options.Values = append(options.Values, "ingressRoute.dashboard.enabled=true")
 		options.Values = append(options.Values, "persistence.enabled=false")
