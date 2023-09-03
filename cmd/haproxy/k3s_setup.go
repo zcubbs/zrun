@@ -32,7 +32,7 @@ var k3sSetupCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose := Cmd.Flag("verbose").Value.String() == "true"
 
-		style.PrintColoredHeader("install haproxy")
+		style.PrintColoredHeader("configure haproxy for k3s")
 
 		util.Must(
 			util.RunTask(func() error {
