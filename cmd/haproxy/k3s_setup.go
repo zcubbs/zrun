@@ -82,8 +82,6 @@ func init() {
 
 	_ = k3sSetupCmd.MarkFlagRequired("k3s-domain")
 	_ = k3sSetupCmd.MarkFlagRequired("k3s-api-domain")
-	_ = k3sSetupCmd.MarkFlagRequired("k3s-node-name")
-	_ = k3sSetupCmd.MarkFlagRequired("k3s-node-ip")
 
 	Cmd.AddCommand(k3sSetupCmd)
 }
