@@ -14,6 +14,7 @@ import (
 	"github.com/zcubbs/zrun/cmd/certmanager"
 	"github.com/zcubbs/zrun/cmd/config"
 	"github.com/zcubbs/zrun/cmd/git"
+	"github.com/zcubbs/zrun/cmd/haproxy"
 	"github.com/zcubbs/zrun/cmd/hello"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/cmd/info"
@@ -83,6 +84,7 @@ func addSubCommandPalettes() {
 	rootCmd.AddCommand(certmanager.Cmd)
 	rootCmd.AddCommand(traefik.Cmd)
 	rootCmd.AddCommand(argo.Cmd)
+	rootCmd.AddCommand(haproxy.Cmd)
 }
 
 func init() {

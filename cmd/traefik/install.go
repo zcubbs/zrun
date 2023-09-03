@@ -19,6 +19,8 @@ var (
 	defaultArgs = [...]string{
 		"--global.sendanonymoususage=false",
 		"--entrypoints.websecure.http.tls",
+		fmt.Sprintf("--entrypoints.web.address=:%s", endpointWeb),
+		fmt.Sprintf("--entrypoints.websecure.address=:%s", endpointWebsecure),
 	}
 	insecureArgs = [...]string{
 		"--serversTransport.insecureSkipVerify",
@@ -44,6 +46,8 @@ var (
 	withForwardedHeaders bool
 	withProxyProtocol    bool
 	ingressProvider      string
+	endpointWeb          string
+	endpointWebsecure    string
 )
 
 // install represents the list command
@@ -149,6 +153,8 @@ func init() {
 	install.Flags().BoolVar(&withForwardedHeaders, "forwardedHeaders", false, "use insecure forwarded headers")
 	install.Flags().BoolVar(&withProxyProtocol, "proxy", false, "use proxy protocol")
 	install.Flags().StringVar(&ingressProvider, "ingressProvider", "", "ingress provider")
+	install.Flags().StringVar(&endpointWeb, "endpointWeb", "80", "endpoint web")
+	install.Flags().StringVar(&endpointWebsecure, "endpointWebsecure", "443", "endpoint websecure")
 
 	Cmd.AddCommand(install)
 }
