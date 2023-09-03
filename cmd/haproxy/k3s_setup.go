@@ -112,11 +112,8 @@ frontend k3s_https
 	bind *:443
 	mode tcp
 
-	acl k3s_api if { req.ssl_sni -i  {{ .K3sApiDomain }} }
-	acl k3s 	if { req.ssl_sni -m end -i  {{ .K3sDomain }} }
-
-	use_backend 	k3s_api 			if k3s_api
-	use_backend 	k3s_ingress_https 	if k3s
+	use_backend k3s_api 			if { req.ssl_sni 		-i  {{ .K3sApiDomain }} }
+	use_backend k3s_ingress_https 	if { req.ssl_sni -m end -i  {{ .K3sDomain }} }
 
 backend k3s_api
 	balance roundrobin
