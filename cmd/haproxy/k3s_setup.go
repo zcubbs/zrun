@@ -13,6 +13,10 @@ import (
 	"os"
 )
 
+const (
+	haproxyConfigFilePath = "/etc/haproxy/haproxy.cfg"
+)
+
 var (
 	k3sDomain    string // k3s domain
 	k3sApiDomain string // k3s api domain
@@ -41,7 +45,7 @@ var k3sSetupCmd = &cobra.Command{
 	},
 }
 
-type HaproxyK3sConfig struct {
+type K3sConfig struct {
 	K3sDomain    string
 	K3sApiDomain string
 	K3sNodeName  string
@@ -49,7 +53,7 @@ type HaproxyK3sConfig struct {
 }
 
 func configureHaproxyK3s(verbose bool) error {
-	k3sConfig := HaproxyK3sConfig{
+	k3sConfig := K3sConfig{
 		K3sDomain:    k3sDomain,
 		K3sApiDomain: k3sApiDomain,
 		K3sNodeName:  k3sNodeName,
@@ -61,11 +65,8 @@ func configureHaproxyK3s(verbose bool) error {
 		return fmt.Errorf("failed to apply template \n %w", err)
 	}
 
-	// config file name
-	configFile := "/etc/haproxy/haproxy.cfg"
-
 	// write tmp manifest
-	err = os.WriteFile(configFile, configFileContent, 0644)
+	err = os.WriteFile(haproxyConfigFilePath, configFileContent, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write haproxy config file \n %w", err)
 	}
