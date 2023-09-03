@@ -19,8 +19,6 @@ var (
 	defaultArgs = [...]string{
 		"--global.sendanonymoususage=false",
 		"--entrypoints.websecure.http.tls",
-		fmt.Sprintf("--entrypoints.web.address=:%s", endpointWeb),
-		fmt.Sprintf("--entrypoints.websecure.address=:%s", endpointWebsecure),
 	}
 	insecureArgs = [...]string{
 		"--serversTransport.insecureSkipVerify",
@@ -95,6 +93,8 @@ func installChart(verbose bool) error {
 		options.Values = append(options.Values, "persistence.enabled=false")
 		options.Values = append(options.Values, "service.type=LoadBalancer")
 		options.Values = append(options.Values, "service.enabled=true")
+		options.Values = append(options.Values, "service.ports.websecure=:"+endpointWebsecure)
+		options.Values = append(options.Values, "service.ports.web=:"+endpointWeb)
 
 		additionalArgs = append(additionalArgs, defaultArgs[:]...)
 	}
