@@ -77,8 +77,8 @@ func configureHaproxyK3s(verbose bool) error {
 func init() {
 	k3sSetupCmd.Flags().StringVarP(&k3sDomain, "k3s-domain", "d", "", "k3s domain")
 	k3sSetupCmd.Flags().StringVarP(&k3sApiDomain, "k3s-api-domain", "a", "", "k3s api domain")
-	k3sSetupCmd.Flags().StringVarP(&k3sNodeName, "k3s-node-name", "n", "", "k3s node name")
-	k3sSetupCmd.Flags().StringVarP(&k3sNodeIP, "k3s-node-ip", "i", "", "k3s node ip")
+	k3sSetupCmd.Flags().StringVarP(&k3sNodeName, "k3s-node-name", "n", "k3s", "k3s node name")
+	k3sSetupCmd.Flags().StringVarP(&k3sNodeIP, "k3s-node-ip", "i", "127.0.0.1", "k3s node ip")
 
 	_ = k3sSetupCmd.MarkFlagRequired("k3s-domain")
 	_ = k3sSetupCmd.MarkFlagRequired("k3s-api-domain")
@@ -113,7 +113,7 @@ frontend k3s_https
 	bind *:443
 	mode tcp
 
-    acl k3s_api hdr_end(host) -i {{ .K3sApiDomain }}
+	acl k3s_api hdr_end(host) -i {{ .K3sApiDomain }}
 	acl k3s 	hdr_end(host) -i {{ .K3sDomain }}
 
 	use_backend 	k3s_api 			if k3s_api
