@@ -8,12 +8,13 @@ import (
 	"github.com/zcubbs/zrun/pkg/style"
 	"github.com/zcubbs/zrun/pkg/util"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
 
 const (
-	defaultLastCommitFile = "~/.zrun_haproxy_last_commit"
+	defaultLastCommitFile = "last_commit"
 )
 
 var (
@@ -50,6 +51,25 @@ func updateConfig(verbose bool) error {
 	err := git.CloneWithCredentials(repoUrl, clonePath, credentialsUsername, credentialsPassword)
 	if err != nil {
 		return err
+	}
+
+	// get user home dir
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	// build path to lastCommitFile
+	path := filepath.Join(homeDir,
+		fmt.Sprintf("%s/%s", ".zrun", lastCommitFile),
+	)
+
+	// Create last commit file if it doesn't exist
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		_, err := xos.CreateFileWithPath(path)
+		if err != nil {
+			return err
+		}
 	}
 
 	lastCommit, err := os.ReadFile(lastCommitFile)

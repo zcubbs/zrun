@@ -6,6 +6,7 @@ package os
 
 import (
 	"os"
+	"path/filepath"
 )
 
 func CreateDirIfNotExist(dir string) error {
@@ -29,4 +30,17 @@ func CopyFileToDestination(srcFile, destFile string) error {
 		return err
 	}
 	return nil
+}
+
+// CreateFileWithPath creates a file with the specified path.
+// It will create any required directories in the path if they don't exist.
+func CreateFileWithPath(path string) (*os.File, error) {
+	// Ensure the directory exists
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, err
+	}
+
+	// Create the file
+	return os.Create(path)
 }
