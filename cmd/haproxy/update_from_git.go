@@ -102,19 +102,18 @@ func updateConfig(verbose bool) error {
 
 func runAction(verbose bool) error {
 	// copy file to /etc/haproxy/haproxy.cfg
-	// validate config
-	// restart haproxy
-
 	err := xos.CopyFileToDestination(file, "/etc/haproxy/haproxy.cfg")
 	if err != nil {
 		return err
 	}
 
+	// validate config
 	err = validateHaproxyConfig(verbose)
 	if err != nil {
 		return err
 	}
 
+	// restart haproxy
 	err = xos.RestartSystemdService("haproxy", verbose)
 	if err != nil {
 		return err

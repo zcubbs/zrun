@@ -1,0 +1,24 @@
+package os
+
+import (
+	"os"
+	"strings"
+)
+
+// GenerateBashScript creates a bash script file with the given commands.
+// It returns the path of the created script or an error.
+func GenerateBashScript(commands []string, outputPath string) error {
+	// Start with the bash shebang
+	scriptContent := "#!/bin/bash\n\n"
+
+	// Append commands
+	scriptContent += strings.Join(commands, "\n")
+
+	// Write the script content to the specified output path
+	err := os.WriteFile(outputPath, []byte(scriptContent), 0755) // Give execute permission
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
