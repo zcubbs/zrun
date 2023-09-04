@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"strings"
 )
 
 func ExecuteScript(script string, output bool, commands ...string) (bool, error) {
@@ -53,4 +54,18 @@ func ExecuteCmd(cmd string, output bool, args ...string) error {
 	}
 
 	return nil
+}
+
+func ExecuteCmdWithOutput(command string, args ...string) (string, error) {
+	var stdout, stderr strings.Builder
+
+	cmd := exec.Command(command, args...)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	if err != nil {
+		return stderr.String(), err
+	}
+	return stdout.String(), nil
 }

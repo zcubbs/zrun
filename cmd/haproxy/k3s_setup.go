@@ -7,6 +7,7 @@ package haproxy
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/zcubbs/zrun/pkg/bash"
 	"github.com/zcubbs/zrun/pkg/kubectl"
 	xos "github.com/zcubbs/zrun/pkg/os"
 	"github.com/zcubbs/zrun/pkg/style"
@@ -25,7 +26,7 @@ var (
 	k3sNodeIP    string // k3s node ip
 )
 
-// install represents the list command
+// k3sSetupCmd represents the list command
 var k3sSetupCmd = &cobra.Command{
 	Use:   "k3s-setup",
 	Short: "configure haproxy for k3s single node",
@@ -72,10 +73,25 @@ func configureHaproxyK3s(verbose bool) error {
 		return fmt.Errorf("failed to write haproxy config file \n %w", err)
 	}
 
+	// validate config
+	err = validateHaproxyConfig(verbose)
+	if err != nil {
+		return err
+	}
+
 	err = xos.RestartSystemdService("haproxy", verbose)
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func validateHaproxyConfig(verbose bool) error {
+	err := bash.ExecuteCmd("haproxy", verbose, "-c", "-V", "-f", haproxyConfigFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to validate haproxy config \n %w", err)
+	}
+
 	return nil
 }
 

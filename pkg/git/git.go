@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/zcubbs/zrun/pkg/bash"
 	"os"
 )
 
@@ -38,4 +39,13 @@ func CloneWithCredentials(url string, path string, username string, password str
 	fmt.Println("Cloned repository to " + path + " successfully!")
 
 	return err
+}
+
+func GetLatestCommit(gitRepoPath string) (string, error) {
+	commit, err := bash.ExecuteCmdWithOutput("git", "-C", gitRepoPath, "rev-parse", "HEAD")
+	if err != nil {
+		return "", err
+	}
+
+	return commit, nil
 }
