@@ -17,7 +17,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 	github.com/zcubbs/dagger-utils v1.0.10
-	golang.org/x/term v0.10.0
+	golang.org/x/term v0.12.0
 	golang.org/x/text v0.11.0
 	gopkg.in/yaml.v2 v2.4.0
 	helm.sh/helm/v3 v3.12.2
@@ -165,7 +165,7 @@ require (
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
