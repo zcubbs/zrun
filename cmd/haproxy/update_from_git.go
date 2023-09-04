@@ -33,7 +33,7 @@ var updateFromGitCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose := Cmd.Flag("verbose").Value.String() == "true"
 
-		style.PrintColoredHeader("configure haproxy for k3s")
+		style.PrintColoredHeader("configure haproxy from Git")
 
 		util.Must(
 			util.RunTask(func() error {

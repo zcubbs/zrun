@@ -7,7 +7,7 @@ import (
 
 // GenerateBashScript creates a bash script file with the given commands.
 // It returns the path of the created script or an error.
-func GenerateBashScript(commands []string, outputPath string) error {
+func GenerateBashScript(outputPath string, commands ...string) error {
 	// Start with the bash shebang
 	scriptContent := "#!/bin/bash\n\n"
 
