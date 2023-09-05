@@ -56,7 +56,7 @@ func updateConfig(verbose bool) error {
 	// get user home dir
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get user home dir: %v", err)
 	}
 
 	// build path to lastCommitFile
@@ -68,19 +68,18 @@ func updateConfig(verbose bool) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		_, err := xos.CreateFileWithPath(path)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create last commit file: %v", err)
 		}
 	}
 
 	lastCommit, err := os.ReadFile(lastCommitFile)
 	if err != nil {
-		fmt.Printf("Failed to read last commit: %v\n", err)
-		// Handle this based on your needs. If file doesn't exist, it's probably the first run.
+		fmt.Printf("warn: failed to read last commit: %v\n", err)
 	}
 
 	currentCommit, err := git.GetLatestCommit(clonePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get latest commit: %v", err)
 	}
 
 	changes, err := git.FileHasChanges(
@@ -90,16 +89,13 @@ func updateConfig(verbose bool) error {
 		currentCommit,
 	)
 	if err != nil {
-		return err
-	}
-	if err != nil {
-		return err
+		return fmt.Errorf("failed to check if file has changes: %v", err)
 	}
 
 	if changes {
 		err := runAction(verbose)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to run haproxy cfg copy/restart: %v", err)
 		}
 	} else {
 		fmt.Println("No changes found")
@@ -108,13 +104,13 @@ func updateConfig(verbose bool) error {
 	// Save the latest commit for the next check
 	err = os.WriteFile(lastCommitFile, []byte(currentCommit), 0644)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to write last commit file: %v", err)
 	}
 
 	// Clean cloned files
 	err = os.RemoveAll(clonePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to clean cloned files: %v", err)
 	}
 
 	return nil
@@ -124,19 +120,19 @@ func runAction(verbose bool) error {
 	// copy file to /etc/haproxy/haproxy.cfg
 	err := xos.CopyFileToDestination(file, "/etc/haproxy/haproxy.cfg")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to copy file to destination: %v", err)
 	}
 
 	// validate config
 	err = validateHaproxyConfig(verbose)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to validate haproxy config: %v", err)
 	}
 
 	// restart haproxy
 	err = xos.RestartSystemdService("haproxy", verbose)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to restart haproxy: %v", err)
 	}
 
 	return nil
