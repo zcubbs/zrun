@@ -37,17 +37,19 @@ func setupCron(_ bool) error {
 		--repo-url $HAPROXY_GIT_REPO \
 		--file $HAPROXY_GIT_CONFIG_FILE \
 		--credentials-username $HAPROXY_GIT_USERNAME \
-		--credentials-password $HAPROXY_GIT_PASSWORD \
+		--credentials-password $HAPROXY_GIT_PASSWORD 
 		`)
 	if err != nil {
 		return err
 	}
 
 	// add cron job
-	err = xos.AddCronJob(fmt.Sprintf("* * * * * %s", scriptPath))
+	err = xos.AddCronJob(fmt.Sprintf("* * * * * %s >/dev/null 2>&1", scriptPath))
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("Cron job added successfully!")
 
 	return nil
 }

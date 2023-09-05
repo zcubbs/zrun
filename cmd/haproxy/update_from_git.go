@@ -82,23 +82,31 @@ func updateConfig(verbose bool) error {
 		return fmt.Errorf("failed to get latest commit: %v", err)
 	}
 
-	changes, err := git.FileHasChanges(
-		clonePath,
-		file,
-		strings.TrimSpace(string(lastCommit)),
-		currentCommit,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to check if file has changes: %v", err)
+	if string(lastCommit) == "" {
+		fmt.Println("First run")
+	} else {
+		changes, err := git.FileHasChanges(
+			clonePath,
+			file,
+			strings.TrimSpace(string(lastCommit)),
+			currentCommit,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to check if file has changes: %v", err)
+		}
+
+		if changes {
+			fmt.Println("File has changes")
+		} else {
+			fmt.Println("File has no changes")
+			return nil
+		}
 	}
 
-	if changes {
-		err := runAction(verbose)
-		if err != nil {
-			return fmt.Errorf("failed to run haproxy cfg copy/restart: %v", err)
-		}
-	} else {
-		fmt.Println("No changes found")
+	// Run the update action
+	err = runAction(verbose)
+	if err != nil {
+		return fmt.Errorf("failed to run haproxy cfg copy/restart: %v", err)
 	}
 
 	// Save the latest commit for the next check
@@ -118,7 +126,8 @@ func updateConfig(verbose bool) error {
 
 func runAction(verbose bool) error {
 	// copy file to /etc/haproxy/haproxy.cfg
-	err := xos.CopyFileToDestination(file, "/etc/haproxy/haproxy.cfg")
+	filePath := fmt.Sprintf("%s/%s", clonePath, file)
+	err := xos.CopyFileToDestination(filePath, "/etc/haproxy/haproxy.cfg")
 	if err != nil {
 		return fmt.Errorf("failed to copy file to destination: %v", err)
 	}

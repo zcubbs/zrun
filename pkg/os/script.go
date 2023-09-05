@@ -1,6 +1,7 @@
 package os
 
 import (
+	"fmt"
 	"os"
 	"strings"
 )
@@ -17,7 +18,7 @@ func GenerateBashScript(outputPath string, commands ...string) error {
 	// Write the script content to the specified output path
 	err := os.WriteFile(outputPath, []byte(scriptContent), 0755) // Give execute permission
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to write bash script path=%s error=%w", outputPath, err)
 	}
 
 	return nil
