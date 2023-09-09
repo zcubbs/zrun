@@ -7,6 +7,7 @@ package helm
 import (
 	"fmt"
 	"github.com/zcubbs/zrun/pkg/bash"
+	"strings"
 )
 
 const (
@@ -57,7 +58,9 @@ func IsHelmInstalled() (bool, error) {
 		false,
 		"version",
 	)
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "executable file not found in $PATH") {
+		return false, nil
+	} else if err != nil {
 		return false, err
 	}
 	return true, nil

@@ -9,9 +9,13 @@ import (
 	"os/exec"
 )
 
+const (
+	BinSH = "/bin/sh"
+)
+
 func Install(packages ...string) error {
 	for _, p := range packages {
-		stdout, err := exec.Command("/bin/sh", "-c",
+		stdout, err := exec.Command(BinSH, "-c",
 			fmt.Sprintf("apt install -y %s", p)).Output()
 		if err != nil {
 			return err
@@ -22,7 +26,7 @@ func Install(packages ...string) error {
 }
 
 func Update() error {
-	stdout, err := exec.Command("/bin/sh", "-c", "apt update -y").Output()
+	stdout, err := exec.Command(BinSH, "-c", "apt update -y").Output()
 	if err != nil {
 		return err
 	}
@@ -31,7 +35,7 @@ func Update() error {
 }
 
 func Upgrade() error {
-	stdout, err := exec.Command("/bin/sh", "-c", "apt upgrade -y").Output()
+	stdout, err := exec.Command(BinSH, "-c", "apt upgrade -y").Output()
 	if err != nil {
 		return err
 	}

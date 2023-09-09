@@ -1,13 +1,7 @@
 version: '3'
 
 vars:
-  EXECUTABLE: zrun
-  WINDOWS: "{{.EXECUTABLE}}_windows_amd64.exe"
-  LINUX: "{{.EXECUTABLE}}_linux_amd64"
-  DARWIN: "{{.EXECUTABLE}}_darwin_amd64"
-  VERSION: $(shell git describe --tags --always --long --dirty)
-  VAGRANT_DIR: scripts/vagrant/ubuntu
-  CURRENT_DIR: $(shell pwd)
+  GOOS: "{{OS}}"
 
 tasks:
 
@@ -15,33 +9,10 @@ tasks:
     cmds:
       - go test ./...
 
-  build:
-    deps: ["windows", "linux", "darwin"]
+  build:linux:
     cmds:
-      - cmd: echo version {{.VERSION}}
-
-  windows:
-    cmds:
-      - go env GOOS=windows GOARCH=amd64
-      - go build -v -o bin\{{.WINDOWS}} -ldflags="-s -w -X main.version={{.VERSION}}" main.go
-
-  linux:
-    cmds:
-      - go env GOOS=linux GOARCH=amd64
-      - go build -v -o bin\{{.LINUX}} -ldflags="-s -w -X main.version={{.VERSION}}" main.go
-
-  darwin:
-    cmds:
-      - go env GOOS=darwin GOARCH=amd64
-      - go build -v -o bin\{{.DARWIN}} -ldflags="-s -w -X main.version={{.VERSION}}" main.go
-
-  clean:
-    cmds:
-      - del /f bin\{{.WINDOWS}}
-      - del /f bin\{{.LINUX}}
-      - del /f bin\{{.DARWIN}}
-
-  # ... other tasks ...
+      - go env -w GOOS=linux GOARCH=amd64
+      - go build -o bin/zrun main.go
 
   lint:
     cmds:

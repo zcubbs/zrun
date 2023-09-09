@@ -82,6 +82,9 @@ func updateConfig(verbose bool) error {
 		return fmt.Errorf("failed to get latest commit: %v", err)
 	}
 
+	fmt.Printf("last commit: %s\n", string(lastCommit))
+	fmt.Printf("current commit: %s\n", currentCommit)
+
 	if string(lastCommit) == "" {
 		fmt.Println("First run")
 	} else {
@@ -150,7 +153,7 @@ func runAction(verbose bool) error {
 func init() {
 	genTempPath := os.TempDir() + "/tmp-git-clone-" + time.Now().Format("20060102150405")
 	updateFromGitCmd.Flags().StringVarP(&repoUrl, "repo-url", "r", "", "git repo url")
-	updateFromGitCmd.Flags().StringVarP(&file, "file", "f", "", "file to watch for changes")
+	updateFromGitCmd.Flags().StringVarP(&file, "file", "f", "haproxy.cfg", "file to watch for changes")
 	updateFromGitCmd.Flags().StringVarP(&credentialsUsername, "credentials-username", "u", "", "git username")
 	updateFromGitCmd.Flags().StringVarP(&credentialsPassword, "credentials-password", "p", "", "git password")
 	updateFromGitCmd.Flags().StringVarP(&clonePath, "clone-path", "c", genTempPath, "clone path")
