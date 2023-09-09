@@ -57,6 +57,7 @@ func installChart(ctx context.Context) error {
 		ChartVersion: chartVersion,
 		ChartValues:  options,
 		Debug:        verbose,
+		Upgrade:      true,
 	}
 
 	err := helm.ExecuteInstallChartCmd(options)

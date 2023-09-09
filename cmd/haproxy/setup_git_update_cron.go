@@ -34,10 +34,10 @@ func setupCron(_ bool) error {
 	// generate script
 	err := xos.GenerateBashScript(scriptPath,
 		`zrun haproxy update-from-git \
-		--repo-url $HAPROXY_GIT_REPO \
+		--repo-url $HAPROXY_GIT_REPO_URL \
 		--file $HAPROXY_GIT_CONFIG_FILE \
-		--credentials-username $HAPROXY_GIT_USERNAME \
-		--credentials-password $HAPROXY_GIT_PASSWORD 
+		--credentials-username $HAPROXY_GIT_REPO_USERNAME \
+		--credentials-password $HAPROXY_GIT_REPO_PASSWORD  
 		`)
 	if err != nil {
 		return err

@@ -127,6 +127,7 @@ func installChart(verbose bool) error {
 		ChartVersion: chartVersion,
 		ChartValues:  options,
 		Debug:        verbose,
+		Upgrade:      true,
 	})
 	if err != nil {
 		return err
@@ -148,8 +149,8 @@ func addAdditionalArgs(additionalArgs []string) []string {
 func init() {
 	// parse flags
 	install.Flags().StringVar(&chartVersion, "version", "", "chart version")
-	install.Flags().StringArrayVar(&options.Values, "set", nil, "chart values")
-	install.Flags().StringArrayVar(&additionalArgs, "set-arg", nil, "chart values additional arguments")
+	install.Flags().StringSliceVar(&options.Values, "set", nil, "chart values")
+	install.Flags().StringSliceVar(&additionalArgs, "set-arg", nil, "chart values additional arguments")
 	install.Flags().BoolVar(&useDefaults, "defaults", false, "use default values")
 	install.Flags().BoolVar(&withInsecure, "insecure", false, "use insecure connection")
 	install.Flags().BoolVar(&withForwardedHeaders, "forwardedHeaders", false, "use insecure forwarded headers")

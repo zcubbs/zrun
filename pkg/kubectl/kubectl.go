@@ -87,3 +87,12 @@ func ApplyTmpl(tmplStr string, tmplData interface{}, debug bool) ([]byte, error)
 	}
 	return buf.Bytes(), nil
 }
+
+func GetSecret(kubeconfig, namespace, secretName string) (*apiv1.Secret, error) {
+	cs := kubernetes.GetClientSet(kubeconfig)
+	secret, err := cs.CoreV1().Secrets(namespace).Get(context.Background(), secretName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return secret, nil
+}

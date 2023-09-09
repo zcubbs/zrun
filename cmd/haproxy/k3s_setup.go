@@ -24,6 +24,9 @@ var (
 	k3sApiDomain string // k3s api domain
 	k3sNodeName  string // k3s node name
 	k3sNodeIP    string // k3s node ip
+	k3sApiPort   string // k3s api port
+	securePort   string // secure port
+	insecurePort string // insecure port
 )
 
 // k3sSetupCmd represents the list command
@@ -52,6 +55,9 @@ type K3sConfig struct {
 	K3sApiDomain string
 	K3sNodeName  string
 	K3sNodeIP    string
+	K3sApiPort   string
+	SecurePort   string
+	InsecurePort string
 }
 
 func configureHaproxyK3s(verbose bool) error {
@@ -60,6 +66,9 @@ func configureHaproxyK3s(verbose bool) error {
 		K3sApiDomain: k3sApiDomain,
 		K3sNodeName:  k3sNodeName,
 		K3sNodeIP:    k3sNodeIP,
+		K3sApiPort:   k3sApiPort,
+		SecurePort:   securePort,
+		InsecurePort: insecurePort,
 	}
 
 	configFileContent, err := kubectl.ApplyTmpl(haproxyK3sConfigTmpl, k3sConfig, verbose)
@@ -100,6 +109,9 @@ func init() {
 	k3sSetupCmd.Flags().StringVarP(&k3sApiDomain, "k3s-api-domain", "a", "", "k3s api domain")
 	k3sSetupCmd.Flags().StringVarP(&k3sNodeName, "k3s-node-name", "n", "k3s", "k3s node name")
 	k3sSetupCmd.Flags().StringVarP(&k3sNodeIP, "k3s-node-ip", "i", "127.0.0.1", "k3s node ip")
+	k3sSetupCmd.Flags().StringVarP(&securePort, "secure-port", "s", "443", "secure port")
+	k3sSetupCmd.Flags().StringVarP(&insecurePort, "insecure-port", "p", "80", "insecure port")
+	k3sSetupCmd.Flags().StringVarP(&k3sApiPort, "k3s-api-port", "k", "6443", "k3s api port")
 
 	_ = k3sSetupCmd.MarkFlagRequired("k3s-domain")
 	_ = k3sSetupCmd.MarkFlagRequired("k3s-api-domain")
@@ -110,16 +122,18 @@ func init() {
 var haproxyK3sConfigTmpl = `
 defaults	
 	log	global
-	timeout http-request 20s
+	maxconn 1000
+	timeout http-request 300s
 	timeout connect 5000
-	timeout client  50000 # ddos protection
-	timeout server  50000 # stick-table type ip size 100k expire 30s store conn_cur
+	timeout client  2000000 # ddos protection
+	timeout server  2000000 # stick-table type ip size 100k expire 30s store conn_cur
 	timeout http-keep-alive 10s
 
 frontend k3s_http	
 	bind *:80
 	mode tcp
-	
+	option tcplog
+	option  http-keep-alive
 	acl k3s hdr_end(host) -i {{ .K3sDomain }}
 
 	use_backend 	k3s_ingress_http if k3s
@@ -127,20 +141,26 @@ frontend k3s_http
 frontend k3s_https
 	bind *:443
 	mode tcp
+	option tcplog
+	option  http-keep-alive
+	timeout client 3h
+	timeout server 3h
+	tcp-request inspect-delay 5s
+	tcp-request content accept  if { req_ssl_hello_type 1 }
 
-	use_backend k3s_api 			if { req.ssl_sni 		-i  {{ .K3sApiDomain }} }
-	use_backend k3s_ingress_https 	if { req.ssl_sni -m end -i  {{ .K3sDomain }} }
+	use_backend k3s_api             if { req.ssl_sni        -i  {{ .K3sApiDomain }} }
+	use_backend k3s_ingress_https   if { req.ssl_sni -m end -i  {{ .K3sDomain }} }
 
 backend k3s_api
 	balance roundrobin
-	server {{ .K3sNodeName }} {{ .K3sNodeIP }}:6443 check check-ssl verify none inter 10000
+	server {{ .K3sNodeName }} {{ .K3sNodeIP }}:{{ .K3sApiPort }} check check-ssl verify none inter 10000
 
 backend k3s_ingress_http	
 	balance roundrobin
-	server {{ .K3sNodeName }} {{ .K3sNodeIP }}:8080 check
+	server {{ .K3sNodeName }} {{ .K3sNodeIP }}:{{ .InsecurePort }} check
 
 backend k3s_ingress_https
 	balance roundrobin
 	option ssl-hello-chk
-	server {{ .K3sNodeName }} {{ .K3sNodeIP }}:444 send-proxy check
+	server {{ .K3sNodeName }} {{ .K3sNodeIP }}:{{ .SecurePort }} send-proxy check
 `

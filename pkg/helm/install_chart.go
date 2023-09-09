@@ -35,6 +35,7 @@ type InstallChartOptions struct {
 	ChartVersion string
 	ChartValues  helmValues.Options
 	Debug        bool
+	Upgrade      bool
 }
 
 func InstallChart(options InstallChartOptions) error {
@@ -59,6 +60,8 @@ func InstallChart(options InstallChartOptions) error {
 	}
 
 	client := action.NewInstall(actionConfig)
+
+	client.IsUpgrade = options.Upgrade
 
 	client.CreateNamespace = true
 
