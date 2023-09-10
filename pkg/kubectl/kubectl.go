@@ -18,24 +18,27 @@ import (
 	"time"
 )
 
-func CreateNamespace(kubeconfig string, namespace string) error {
+func CreateNamespace(kubeconfig string, namespace []string) error {
 	cs := kubernetes.GetClientSet(kubeconfig)
-	ns := &apiv1.Namespace{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "Namespace",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: namespace,
-			Labels: map[string]string{
-				"name": namespace,
-			},
-		},
-	}
 
-	_, err := cs.CoreV1().Namespaces().Create(context.Background(), ns, metav1.CreateOptions{})
-	if err != nil && !errosv1.IsAlreadyExists(err) {
-		return err
+	for _, ns := range namespace {
+		ns := &apiv1.Namespace{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "v1",
+				Kind:       "Namespace",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: ns,
+				Labels: map[string]string{
+					"name": ns,
+				},
+			},
+		}
+
+		_, err := cs.CoreV1().Namespaces().Create(context.Background(), ns, metav1.CreateOptions{})
+		if err != nil && !errosv1.IsAlreadyExists(err) {
+			return err
+		}
 	}
 
 	return nil

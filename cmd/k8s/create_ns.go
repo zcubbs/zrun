@@ -1,3 +1,7 @@
+// Package k8s
+/*
+Copyright © 2023 zcubbs https://github.com/zcubbs
+*/
 package k8s
 
 import (
@@ -5,32 +9,46 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zcubbs/zrun/internal/configs"
 	"github.com/zcubbs/zrun/pkg/kubectl"
-	"os"
+	"github.com/zcubbs/zrun/pkg/style"
+	"github.com/zcubbs/zrun/pkg/util"
 )
 
-var namespace string
+var newNamespaces []string
 
 // createNamespace represents the list command
-var createNamespace = &cobra.Command{
+var createNamespaceCmd = &cobra.Command{
 	Use:   "create-ns",
 	Short: "Show k8s create-ns list",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := ExecuteCreateNamespaceCmd(
-			configs.Config.Kubeconfig.Path,
-			namespace,
-		)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		style.PrintColoredHeader("create k8s namespace")
+		util.Must(
+			util.RunTask(func() error {
+				err := createNamespace(
+					configs.Config.Kubeconfig.Path,
+					newNamespaces,
+				)
+				return err
+			}, true))
 	},
+}
+
+func createNamespace(kubeconfig string, namespaces []string) error {
+	err := kubectl.CreateNamespace(
+		kubeconfig,
+		namespaces,
+	)
+	if err != nil {
+		return fmt.Errorf("couldn't create namespace\n %v", err)
+	}
+
+	return nil
 }
 
 func ExecuteCreateNamespaceCmd(kubeconfig, namespace string) error {
 	err := kubectl.CreateNamespace(
 		kubeconfig,
-		namespace,
+		[]string{namespace},
 	)
 	if err != nil {
 		return fmt.Errorf("couldn't create namespace\n %v", err)
@@ -40,10 +58,10 @@ func ExecuteCreateNamespaceCmd(kubeconfig, namespace string) error {
 }
 
 func init() {
-	createNamespace.Flags().StringVarP(&namespace, "namespace", "n", "", "namespace value")
-	if err := createNamespace.MarkFlagRequired("namespace"); err != nil {
+	createNamespaceCmd.Flags().StringSliceVarP(&newNamespaces, "namespace", "n", nil, "namespace value")
+	if err := createNamespaceCmd.MarkFlagRequired("namespace"); err != nil {
 		fmt.Println(err)
 	}
 
-	Cmd.AddCommand(createNamespace)
+	Cmd.AddCommand(createNamespaceCmd)
 }
