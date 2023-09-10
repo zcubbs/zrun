@@ -13,19 +13,23 @@ import (
 )
 
 var (
-	appName         string   // app name
-	appNamespace    string   // app namespace
-	isHelm          bool     // is helm
-	helmValueFiles  []string // helm value files
-	project         string   // project
-	repoURL         string   // repo url
-	targetRevision  string   // target revision
-	path            string   // path
-	recurse         bool     // recurse
-	createNamespace bool     // create namespace
-	prune           bool     // prune
-	selfHeal        bool     // self heal
-	allowEmpty      bool     // allow empty
+	appName          string   // app name
+	appNamespace     string   // app namespace
+	isHelm           bool     // is helm
+	helmValueFiles   []string // helm value files
+	project          string   // project
+	repoURL          string   // repo url
+	targetRevision   string   // target revision
+	path             string   // path
+	recurse          bool     // recurse
+	createNamespace  bool     // create namespace
+	prune            bool     // prune
+	selfHeal         bool     // self heal
+	allowEmpty       bool     // allow empty
+	isOci            bool     // is oci
+	ociChartName     string   // oci chart name
+	ociRepoURL       string   // oci repo url
+	ociChartRevision string   // oci chart revision
 )
 
 // Cmd represents the install command
@@ -45,20 +49,24 @@ var appCmd = &cobra.Command{
 }
 
 type ArgoApp struct {
-	AppName         string
-	AppNamespace    string
-	IsHelm          bool
-	HelmValueFiles  []string
-	Project         string
-	RepoURL         string
-	TargetRevision  string
-	Path            string
-	Recurse         bool
-	CreateNamespace bool
-	Prune           bool
-	SelfHeal        bool
-	AllowEmpty      bool
-	ArgoNamespace   string
+	AppName          string
+	AppNamespace     string
+	IsHelm           bool
+	HelmValueFiles   []string
+	Project          string
+	RepoURL          string
+	TargetRevision   string
+	Path             string
+	Recurse          bool
+	CreateNamespace  bool
+	Prune            bool
+	SelfHeal         bool
+	AllowEmpty       bool
+	ArgoNamespace    string
+	IsOci            bool
+	OciChartName     string
+	OciChartRevision string
+	OciRepoURL       string
 }
 
 var argoAppTmpl = `---
@@ -78,9 +86,9 @@ spec:
     helm:
       passCredentials: true
       valueFiles:
-      {{ range .HelmValueFiles }}
+      {{- range .HelmValueFiles }}
         - {{ . }}
-      {{ end }}
+      {{- end }}
     {{ else }}
     directory:
       recurse: {{ .Recurse }}
@@ -97,23 +105,82 @@ spec:
       allowEmpty: {{ .AllowEmpty }}
 `
 
+var argoAppOciTmpl = `---
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .AppName }}
+  namespace: {{ .ArgoNamespace }}
+spec:
+  project: {{ .Project }}
+  sources:
+    - repoURL: {{ .OciRepoURL }}
+      targetRevision: {{ .OciChartRevision }}
+      chart: {{ .OciChartName }}
+      helm:
+        passCredentials: true
+        valueFiles:
+        {{- range .HelmValueFiles }}
+          - {{ . }}
+        {{- end }}	
+    - repoURL: {{ .RepoURL }}
+      targetRevision: {{ .TargetRevision }}
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ .AppNamespace }}
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace={{ .CreateNamespace }}
+    automated:
+      prune: {{ .Prune }}
+      selfHeal: {{ .SelfHeal }}
+      allowEmpty: {{ .AllowEmpty }}
+`
+
 func addApp(verbose bool) error {
+	if !isHelm && isOci {
+		return fmt.Errorf("oci flag can only be used with helm charts. flag --helm flag is not set")
+	}
+
+	if isOci && ociChartName == "" {
+		return fmt.Errorf("oci chart name cannot be empty, when --oci flag is set")
+	}
+
+	if (!isOci && !isHelm) && path == "" {
+		return fmt.Errorf("path cannot be empty, when --helm flag is not set")
+	}
+
 	// create app
 	a := &ArgoApp{
-		AppName:         appName,
-		AppNamespace:    appNamespace,
-		IsHelm:          isHelm,
-		HelmValueFiles:  helmValueFiles,
-		Project:         project,
-		RepoURL:         repoURL,
-		TargetRevision:  targetRevision,
-		Path:            path,
-		Recurse:         recurse,
-		CreateNamespace: createNamespace,
-		Prune:           prune,
-		SelfHeal:        selfHeal,
-		AllowEmpty:      allowEmpty,
-		ArgoNamespace:   namespace,
+		AppName:          appName,
+		AppNamespace:     appNamespace,
+		IsHelm:           isHelm,
+		HelmValueFiles:   helmValueFiles,
+		Project:          project,
+		RepoURL:          repoURL,
+		TargetRevision:   targetRevision,
+		Path:             path,
+		Recurse:          recurse,
+		CreateNamespace:  createNamespace,
+		Prune:            prune,
+		SelfHeal:         selfHeal,
+		AllowEmpty:       allowEmpty,
+		ArgoNamespace:    namespace,
+		IsOci:            isOci,
+		OciChartName:     ociChartName,
+		OciRepoURL:       ociRepoURL,
+		OciChartRevision: ociChartRevision,
+	}
+
+	if isOci {
+		// Apply template
+		err := kubectl.ApplyManifest(argoAppOciTmpl, a, verbose)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 
 	err := kubectl.ApplyManifest(argoAppTmpl, a, verbose)
@@ -138,6 +205,10 @@ func init() {
 	appCmd.Flags().BoolVar(&prune, "auto-prune", true, "prune")
 	appCmd.Flags().BoolVar(&selfHeal, "self-heal", true, "self heal")
 	appCmd.Flags().BoolVar(&allowEmpty, "allow-empty", false, "allow empty")
+	appCmd.Flags().BoolVar(&isOci, "oci", false, "is oci")
+	appCmd.Flags().StringVar(&ociChartName, "oci-chart", "", "oci chart name")
+	appCmd.Flags().StringVar(&ociRepoURL, "oci-repo", "", "oci repo url")
+	appCmd.Flags().StringVar(&ociChartRevision, "oci-revision", "HEAD", "oci chart revision")
 
 	// mandatory flags
 	err := appCmd.MarkFlagRequired("app-name")
@@ -149,10 +220,6 @@ func init() {
 		fmt.Println(err)
 	}
 	err = appCmd.MarkFlagRequired("repo")
-	if err != nil {
-		fmt.Println(err)
-	}
-	err = appCmd.MarkFlagRequired("path")
 	if err != nil {
 		fmt.Println(err)
 	}

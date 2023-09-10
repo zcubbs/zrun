@@ -60,7 +60,7 @@ func runAddRepo() error {
 		strings.HasPrefix(repositoryUrl, "https://")
 
 	// check if url is valid
-	if !urlValid {
+	if !urlValid && repositoryType == Git {
 		return fmt.Errorf("error: repository url must be valid url: %s", repositoryUrl)
 	}
 
@@ -164,6 +164,7 @@ stringData:
   type: {{ .Type }}
 {{- if eq .Type "helm" }}
   name: {{ .Name }}
+  enableOCI: "true"
 {{- end }}
   url: {{ .Url }}
   username: {{ .Username }}
