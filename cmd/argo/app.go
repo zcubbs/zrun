@@ -76,6 +76,7 @@ spec:
     path: {{ .Path }}
     {{ if .IsHelm }}
     helm:
+      passCredentials: true
       valueFiles:
       {{ range .HelmValueFiles }}
         - {{ . }}

@@ -60,6 +60,7 @@ func installChart() error {
 		ChartVersion: chartVersion,
 		ChartValues:  options,
 		Debug:        verbose,
+		Upgrade:      true,
 	})
 	if err != nil {
 		return err

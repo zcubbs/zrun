@@ -168,6 +168,7 @@ stringData:
   url: {{ .Url }}
   username: {{ .Username }}
   password: {{ .Password }}
+type: Opaque
 `
 
 func addRepo() error {

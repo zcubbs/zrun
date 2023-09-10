@@ -23,6 +23,7 @@ const (
 var (
 	chartVersion string
 	options      values.Options
+	insecure     bool
 )
 
 // install represents the list command
@@ -60,6 +61,11 @@ func installChart(ctx context.Context) error {
 		Upgrade:      true,
 	}
 
+	if insecure {
+		param := "configs.params.server\\.insecure=true"
+		options.ChartValues.Values = append(options.ChartValues.Values, param)
+	}
+
 	err := helm.ExecuteInstallChartCmd(options)
 	if err != nil {
 		return err
@@ -89,7 +95,8 @@ func installChart(ctx context.Context) error {
 func init() {
 	// parse flags
 	install.Flags().StringVar(&chartVersion, "version", "", "chart version")
-	install.Flags().StringArrayVar(&options.Values, "set", nil, "chart values")
+	install.Flags().StringSliceVar(&options.Values, "set", nil, "chart values")
+	install.Flags().BoolVar(&insecure, "insecure", true, "insecure")
 
 	Cmd.AddCommand(install)
 }
