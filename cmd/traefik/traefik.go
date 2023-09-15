@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Cmd represents the install command
+// Cmd represents the installCmd command
 var Cmd = &cobra.Command{
 	Use:   "traefik",
 	Short: "traefik Commands",

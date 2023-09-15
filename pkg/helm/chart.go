@@ -47,7 +47,13 @@ func InstallChart(options InstallChartOptions) error {
 		return fmt.Errorf("failed to init action config. %s", err)
 	}
 
-	if options.Upgrade {
+	// Check if release exists
+	exists, err := releaseExists(options.ChartName, options.Namespace, settings)
+	if err != nil {
+		return fmt.Errorf("failed to check if release exists: %w", err)
+	}
+
+	if exists && options.Upgrade {
 		return updateChart(options, actionConfig, settings)
 	}
 
@@ -129,6 +135,31 @@ func installChart(options InstallChartOptions, actionConfig *action.Configuratio
 	printDebugInfo(r, options)
 
 	return nil
+}
+
+// Checks whether a Helm release with the given name exists in the specified namespace.
+func releaseExists(releaseName, namespace string, settings *cli.EnvSettings) (bool, error) {
+	helmLog := chooseLogFunc(false)
+	actionConfig := new(action.Configuration)
+	if err := actionConfig.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), helmLog); err != nil {
+		return false, err
+	}
+
+	listAction := action.NewList(actionConfig)
+	listAction.Deployed = true // Only consider deployed releases
+
+	releases, err := listAction.Run()
+	if err != nil {
+		return false, err
+	}
+
+	for _, rel := range releases {
+		if rel.Name == releaseName {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func setClientOptions(client *action.Install, options InstallChartOptions) {
@@ -240,13 +271,13 @@ func UninstallChart(kubeconfig, name, namespace string, debug bool) error {
 	}
 	client := action.NewUninstall(actionConfig)
 
-	release, err := client.Run(name)
+	r, err := client.Run(name)
 	if err != nil {
 		return fmt.Errorf("failed to uninstall chart: %w", err)
 	}
 
 	if debug {
-		fmt.Println("uninstalled", release.Release.Name)
+		fmt.Println("uninstalled", r.Release.Name)
 	}
 	return nil
 }

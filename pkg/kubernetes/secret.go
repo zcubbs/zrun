@@ -68,3 +68,30 @@ func CreateContainerRegistrySecret(
 
 	return nil
 }
+
+func CreateGenericSecret(
+	ctx context.Context,
+	kubeconfig string,
+	secretConfig v1.Secret,
+	namespaces []string,
+	replace bool,
+	debug bool) error {
+	cs := GetClientSet(kubeconfig)
+
+	for _, namespace := range namespaces {
+		created, err := cs.CoreV1().Secrets(namespace).Create(ctx, &secretConfig, metav1.CreateOptions{})
+		if err != nil {
+			if strings.Contains(err.Error(), "already exists") && replace {
+				_, err := cs.CoreV1().Secrets(namespace).Update(ctx, &secretConfig, metav1.UpdateOptions{})
+				return err
+			}
+			return fmt.Errorf("failed to create secret: %v", err)
+		}
+
+		if debug {
+			fmt.Printf("Created secret %s\n", created.String())
+		}
+	}
+
+	return nil
+}

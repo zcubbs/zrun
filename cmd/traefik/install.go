@@ -15,6 +15,10 @@ import (
 	"helm.sh/helm/v3/pkg/cli/values"
 )
 
+const (
+	traefikNamespace = "traefik"
+)
+
 var (
 	defaultArgs = [...]string{
 		"--global.sendanonymoususage=false",
@@ -48,8 +52,40 @@ var (
 	endpointWebsecure    string
 )
 
-// install represents the list command
-var install = &cobra.Command{
+var (
+	dnsProviderString string
+	dnsResolver       string
+	dnsTz             string
+
+	ovhEndpoint         string
+	ovhEndpointEnvKey   = "OVH_ENDPOINT"
+	ovhEndpointVaultKey = "ovhEndpoint"
+
+	ovhAppKey         string
+	ovhAppKeyEnvKey   = "OVH_APP_KEY"
+	ovhAppKeyVaultKey = "ovhAppKey"
+
+	ovhAppSecret         string
+	ovhAppSecretEnvKey   = "OVH_APP_SECRET"
+	ovhAppSecretVaultKey = "ovhAppSecret"
+
+	ovhConsumerKey         string
+	ovhConsumerKeyEnvKey   = "OVH_CONSUMER_KEY"
+	ovhConsumerKeyVaultKey = "ovhConsumerKey"
+
+	azureClientID         string
+	azureClientIDEnvKey   = "AZURE_CLIENT_ID"
+	azureClientIDVaultKey = "azureClientID"
+
+	azureClientSecret         string
+	azureClientSecretEnvKey   = "AZURE_CLIENT_SECRET"
+	azureClientSecretVaultKey = "azureClientSecret"
+
+	useVault bool
+)
+
+// installCmd represents the list command
+var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "install traefik Chart",
 	Long:  `install traefik Chart. Note: requires helm`,
@@ -101,6 +137,11 @@ func installChart(verbose bool) error {
 		additionalArgs = append(additionalArgs, defaultArgs[:]...)
 	}
 
+	// can't set both ingressProvider and dnsProvider
+	if ingressProvider != "" && dnsProviderString != "" {
+		return fmt.Errorf("can't set both ingressProvider and dnsProvider")
+	}
+
 	// check if ingressProvider is set, if so, use it
 	if ingressProvider != "" {
 		additionalArgs = append(additionalArgs, fmt.Sprintf(
@@ -108,6 +149,21 @@ func installChart(verbose bool) error {
 			"--providers.kubernetesIngress.ingressClass",
 			ingressProvider,
 		))
+	}
+
+	if dnsProviderString != "" {
+		args, err := configureDNSChallenge()
+		if err != nil {
+			return err
+		}
+
+		options.Values = append(options.Values, "fromEnv[0].name=traefik-dns-account-credentials")
+		additionalArgs = append(additionalArgs, args[:]...)
+
+		err = createDnsSecret()
+		if err != nil {
+			return fmt.Errorf("failed to create dns secret: %w", err)
+		}
 	}
 
 	args := addAdditionalArgs(additionalArgs)
@@ -123,7 +179,7 @@ func installChart(verbose bool) error {
 		RepoName:     "traefik",
 		RepoUrl:      "https://helm.traefik.io/traefik",
 		ChartName:    "traefik",
-		Namespace:    "traefik",
+		Namespace:    traefikNamespace,
 		ChartVersion: chartVersion,
 		ChartValues:  options,
 		Debug:        verbose,
@@ -148,16 +204,21 @@ func addAdditionalArgs(additionalArgs []string) []string {
 
 func init() {
 	// parse flags
-	install.Flags().StringVar(&chartVersion, "version", "", "chart version")
-	install.Flags().StringSliceVar(&options.Values, "set", nil, "chart values")
-	install.Flags().StringSliceVar(&additionalArgs, "set-arg", nil, "chart values additional arguments")
-	install.Flags().BoolVar(&useDefaults, "defaults", false, "use default values")
-	install.Flags().BoolVar(&withInsecure, "insecure", false, "use insecure connection")
-	install.Flags().BoolVar(&withForwardedHeaders, "forwardedHeaders", false, "use insecure forwarded headers")
-	install.Flags().BoolVar(&withProxyProtocol, "proxy", false, "use proxy protocol")
-	install.Flags().StringVar(&ingressProvider, "ingressProvider", "", "ingress provider")
-	install.Flags().StringVar(&endpointWeb, "endpointWeb", "80", "endpoint web")
-	install.Flags().StringVar(&endpointWebsecure, "endpointWebsecure", "443", "endpoint websecure")
+	installCmd.Flags().StringVar(&chartVersion, "version", "", "chart version")
+	installCmd.Flags().StringSliceVar(&options.Values, "set", nil, "chart values")
+	installCmd.Flags().StringSliceVar(&additionalArgs, "set-arg", nil, "chart values additional arguments")
+	installCmd.Flags().BoolVar(&useDefaults, "defaults", false, "use default values")
+	installCmd.Flags().BoolVar(&withInsecure, "insecure", false, "use insecure connection")
+	installCmd.Flags().BoolVar(&withForwardedHeaders, "forwardedHeaders", false, "use insecure forwarded headers")
+	installCmd.Flags().BoolVar(&withProxyProtocol, "proxy", false, "use proxy protocol")
+	installCmd.Flags().StringVar(&ingressProvider, "ingressProvider", "", "ingress provider")
+	installCmd.Flags().StringVar(&endpointWeb, "endpointWeb", "80", "endpoint web")
+	installCmd.Flags().StringVar(&endpointWebsecure, "endpointWebsecure", "443", "endpoint websecure")
 
-	Cmd.AddCommand(install)
+	installCmd.PersistentFlags().BoolVar(&useVault, "use-vault", false, "use vault")
+	installCmd.PersistentFlags().StringVar(&dnsProviderString, "dns-provider", "", "dns provider")
+	installCmd.PersistentFlags().StringVar(&dnsResolver, "dns-resolver", "letsencrypt", "dns resolver")
+	installCmd.PersistentFlags().StringVar(&dnsTz, "dns-tz", "Europe/Paris", "dns tz")
+
+	Cmd.AddCommand(installCmd)
 }
