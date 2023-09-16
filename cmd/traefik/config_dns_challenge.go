@@ -19,9 +19,9 @@ const (
 	Azure      DnsProvider = "azure"
 )
 
-func configureDNSChallenge() ([]string, error) {
+func configureDNSChallengeVars() error {
 	if dnsProviderString == "" {
-		return nil, fmt.Errorf("dns provider is required")
+		return fmt.Errorf("dns provider is required")
 	}
 
 	if dnsProviderString == string(Cloudflare) {
@@ -36,27 +36,25 @@ func configureDNSChallenge() ([]string, error) {
 		return configureAzure()
 	}
 
-	return nil, fmt.Errorf("unknown dns provider: %s", dnsProviderString)
+	return fmt.Errorf("unknown dns provider: %s", dnsProviderString)
 }
 
-func configureCloudflare() ([]string, error) {
-	return nil, fmt.Errorf("cloudflare provider not implemented")
+func configureCloudflare() error {
+	return fmt.Errorf("cloudflare provider not implemented")
 }
 
-func configureOVH() ([]string, error) {
+func configureOVH() error {
 	if useVault {
 		if err := configureOVHVault(); err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		if err := configureOVHEnv(); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	return []string{
-		fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge.provider=ovh", dnsResolver),
-	}, nil
+	return nil
 }
 
 func configureOVHEnv() error {
@@ -119,23 +117,18 @@ func configureOVHVault() error {
 	return nil
 }
 
-func configureAzure() ([]string, error) {
+func configureAzure() error {
 	if useVault {
 		if err := configureAzureVault(); err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		if err := configureAzureEnv(); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	return []string{
-		fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge=true", dnsResolver),
-		fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge.provider=azure", dnsResolver),
-		fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge.azure.clientid=%s", dnsResolver, azureClientID),
-		fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge.azure.clientsecret=%s", dnsResolver, azureClientSecret),
-	}, nil
+	return nil
 }
 
 func configureAzureEnv() error {

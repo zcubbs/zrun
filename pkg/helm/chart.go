@@ -28,6 +28,7 @@ type InstallChartOptions struct {
 	ChartValues  helmValues.Options
 	Debug        bool
 	Upgrade      bool
+	ValuesFile   string
 }
 
 func InstallChart(options InstallChartOptions) error {

@@ -10,9 +10,11 @@ import (
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/internal/configs"
 	helmPkg "github.com/zcubbs/zrun/pkg/helm"
+	"github.com/zcubbs/zrun/pkg/kubectl"
 	"github.com/zcubbs/zrun/pkg/style"
 	"github.com/zcubbs/zrun/pkg/util"
 	"helm.sh/helm/v3/pkg/cli/values"
+	"os"
 )
 
 const (
@@ -21,8 +23,8 @@ const (
 
 var (
 	defaultArgs = [...]string{
-		"--global.sendanonymoususage=false",
 		"--entrypoints.websecure.http.tls",
+		"--global.sendanonymoususage=false",
 	}
 	insecureArgs = [...]string{
 		"--serversTransport.insecureSkipVerify",
@@ -55,6 +57,7 @@ var (
 var (
 	dnsProviderString string
 	dnsResolver       string
+	dnsResolverEmail  string
 	dnsTz             string
 
 	ovhEndpoint         string
@@ -124,16 +127,6 @@ func installChart(verbose bool) error {
 
 	// check if useDefaults is true, if so, use default values
 	if useDefaults {
-		wa := fmt.Sprintf("%s=%s", "ports.web.exposedPort", endpointWeb)
-		wsa := fmt.Sprintf("%s=%s", "ports.websecure.exposedPort", endpointWebsecure)
-		options.Values = append(options.Values, "logs.access.enabled=false")
-		options.Values = append(options.Values, "ingressRoute.dashboard.enabled=true")
-		options.Values = append(options.Values, "persistence.enabled=false")
-		options.Values = append(options.Values, "service.type=LoadBalancer")
-		options.Values = append(options.Values, "service.enabled=true")
-		options.Values = append(options.Values, wa)
-		options.Values = append(options.Values, wsa)
-
 		additionalArgs = append(additionalArgs, defaultArgs[:]...)
 	}
 
@@ -152,29 +145,44 @@ func installChart(verbose bool) error {
 	}
 
 	if dnsProviderString != "" {
-		args, err := configureDNSChallenge()
+		err := configureDNSChallengeVars()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to configure dns challenge vars: %w", err)
 		}
-
-		options.Values = append(options.Values, "fromEnv[0].name=traefik-dns-account-credentials")
-		additionalArgs = append(additionalArgs, args[:]...)
-
 		err = createDnsSecret()
 		if err != nil {
 			return fmt.Errorf("failed to create dns secret: %w", err)
 		}
 	}
 
-	args := addAdditionalArgs(additionalArgs)
+	valuesPath := "values.yaml"
 
-	if verbose {
-		fmt.Printf("...traefik additional args: %s\n", args)
+	tv := traefikValues{
+		AdditionalArguments: additionalArgs,
+		DnsProvider:         dnsProviderString,
+		DnsResolver:         dnsResolver,
+		DnsResolverEmail:    dnsResolverEmail,
+		EnableDashboard:     true,
+		EnableAccessLog:     false,
+		DebugLog:            false,
+		EndpointsWeb:        endpointWeb,
+		EndpointsWebsecure:  endpointWebsecure,
+	}
+	// create traefik values.yaml from template
+	configFileContent, err := kubectl.ApplyTmpl(traefikValuesTmpl, tv, verbose)
+	if err != nil {
+		return fmt.Errorf("failed to apply template \n %w", err)
 	}
 
-	options.Values = append(options.Values, args...)
+	// write tmp manifest
+	err = os.WriteFile(valuesPath, configFileContent, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write traefik values.yaml \n %w", err)
+	}
 
-	err := helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
+	options.ValueFiles = []string{valuesPath}
+
+	err = helm.ExecuteInstallChartCmd(helmPkg.InstallChartOptions{
 		Kubeconfig:   kubeconfig,
 		RepoName:     "traefik",
 		RepoUrl:      "https://helm.traefik.io/traefik",
@@ -190,16 +198,6 @@ func installChart(verbose bool) error {
 	}
 
 	return nil
-}
-
-func addAdditionalArgs(additionalArgs []string) []string {
-	var args []string
-	for i, arg := range additionalArgs {
-		adaptedArg := fmt.Sprintf("%s[%d]=%s", "additionalArguments", i, arg)
-		args = append(args, adaptedArg)
-	}
-
-	return args
 }
 
 func init() {
@@ -219,6 +217,107 @@ func init() {
 	installCmd.PersistentFlags().StringVar(&dnsProviderString, "dns-provider", "", "dns provider")
 	installCmd.PersistentFlags().StringVar(&dnsResolver, "dns-resolver", "letsencrypt", "dns resolver")
 	installCmd.PersistentFlags().StringVar(&dnsTz, "dns-tz", "Europe/Paris", "dns tz")
+	installCmd.PersistentFlags().StringVar(&dnsResolverEmail, "dns-resolver-email", "", "dns resolver email")
 
 	Cmd.AddCommand(installCmd)
 }
+
+type traefikValues struct {
+	AdditionalArguments []string
+	DnsProvider         string
+	DnsResolver         string
+	DnsResolverEmail    string
+	EnableDashboard     bool
+	EnableAccessLog     bool
+	DebugLog            bool
+	EndpointsWeb        string
+	EndpointsWebsecure  string
+}
+
+var traefikValuesTmpl = `
+global:
+  sendAnonymousUsage: false
+  checkNewVersion: false
+  log:
+  {{- if .DebugLog }}
+    level: DEBUG
+  {{- else }}
+    level: INFO
+  {{- end }}
+  accessLogs:	
+  {{- if .EnableAccessLog }}	
+    enabled: true
+  {{- else }}
+    enabled: false
+  {{- end }}
+service:
+  enabled: true
+  type: LoadBalancer
+rbac:
+  enabled: true
+additionalArguments:
+  {{- range $i, $arg := .AdditionalArguments }}
+    - "{{ printf "%s" . }}"
+  {{- end }}
+ports:
+  websecure:
+    tls:
+      enabled: true
+      certResolver: {{ .DnsResolver }}-prod
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 128Mi
+  path: /data
+  annotations: { }
+
+ingressRoute:
+  dashboard:
+    enabled: true
+
+logs:
+  general:
+    level: INFO
+  access:
+    enabled: true
+pilot:
+  enabled: false
+
+securityContext:
+  readOnlyRootFilesystem: false
+  runAsGroup: 0
+  runAsUser: 0
+  runAsNonRoot: false
+
+deployment:
+  initContainers:
+    - name: volume-permissions
+      image: busybox:1.31.1
+      command: ["sh", "-c", "touch /data/acme.json; chmod -v 600 /data/acme.json"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+
+certificatesResolvers:
+  {{ .DnsResolver }}-prod:
+    acme:
+      email: {{ .DnsResolverEmail }}
+      storage: /data/acme.json
+      caServer: https://acme-v02.api.letsencrypt.org/directory
+      dnsChallenge:
+        provider: {{ .DnsProvider }}
+        delayBeforeCheck: 10
+  {{ .DnsResolver }}-staging:
+    acme:
+      email: {{ .DnsResolverEmail }}
+      storage: /data/acme.json
+      caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+      dnsChallenge:
+        provider: {{ .DnsProvider }}
+        delayBeforeCheck: 0
+envFrom:
+  - secretRef:
+      name: traefik-dns-account-credentials
+
+`
