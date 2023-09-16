@@ -42,16 +42,20 @@ var (
 )
 
 var (
-	chartVersion         string
-	options              values.Options
-	additionalArgs       []string
-	useDefaults          bool
-	withInsecure         bool
-	withForwardedHeaders bool
-	withProxyProtocol    bool
-	ingressProvider      string
-	endpointWeb          string
-	endpointWebsecure    string
+	chartVersion               string
+	options                    values.Options
+	additionalArgs             []string
+	useDefaults                bool
+	withInsecure               bool
+	withForwardedHeaders       bool
+	forwardedHeadersTrustedIps string
+	withProxyProtocol          bool
+	proxyProtocolTrustedIps    string
+	ingressProvider            string
+	endpointWeb                string
+	endpointWebsecure          string
+	debugLogs                  bool
+	accessLogs                 bool
 )
 
 var (
@@ -158,15 +162,22 @@ func installChart(verbose bool) error {
 	valuesPath := "values.yaml"
 
 	tv := traefikValues{
-		AdditionalArguments: additionalArgs,
-		DnsProvider:         dnsProviderString,
-		DnsResolver:         dnsResolver,
-		DnsResolverEmail:    dnsResolverEmail,
-		EnableDashboard:     true,
-		EnableAccessLog:     false,
-		DebugLog:            false,
-		EndpointsWeb:        endpointWeb,
-		EndpointsWebsecure:  endpointWebsecure,
+		AdditionalArguments: []string{},
+		//AdditionalArguments: additionalArgs,
+		DnsProvider:                        dnsProviderString,
+		DnsResolver:                        dnsResolver,
+		DnsResolverEmail:                   dnsResolverEmail,
+		EnableDashboard:                    true,
+		EnableAccessLog:                    accessLogs,
+		DebugLog:                           debugLogs,
+		EndpointsWeb:                       endpointWeb,
+		EndpointsWebsecure:                 endpointWebsecure,
+		ServersTransportInsecureSkipVerify: withInsecure,
+		ForwardedHeaders:                   withForwardedHeaders,
+		ForwardedHeadersTrustedIPs:         forwardedHeadersTrustedIps,
+		ProxyProtocol:                      withProxyProtocol,
+		ProxyProtocolTrustedIPs:            proxyProtocolTrustedIps,
+		DnsTZ:                              dnsTz,
 	}
 	// create traefik values.yaml from template
 	configFileContent, err := kubectl.ApplyTmpl(traefikValuesTmpl, tv, verbose)
@@ -202,13 +213,17 @@ func installChart(verbose bool) error {
 
 func init() {
 	// parse flags
+	installCmd.Flags().BoolVarP(&debugLogs, "debug", "d", false, "debug logs")
+	installCmd.Flags().BoolVarP(&accessLogs, "accesslog", "a", false, "access logs")
 	installCmd.Flags().StringVar(&chartVersion, "version", "", "chart version")
 	installCmd.Flags().StringSliceVar(&options.Values, "set", nil, "chart values")
 	installCmd.Flags().StringSliceVar(&additionalArgs, "set-arg", nil, "chart values additional arguments")
 	installCmd.Flags().BoolVar(&useDefaults, "defaults", false, "use default values")
 	installCmd.Flags().BoolVar(&withInsecure, "insecure", false, "use insecure connection")
 	installCmd.Flags().BoolVar(&withForwardedHeaders, "forwardedHeaders", false, "use insecure forwarded headers")
+	installCmd.Flags().StringVar(&forwardedHeadersTrustedIps, "forwardedHeadersTrustedIPs", "", "forwarded headers trusted ips")
 	installCmd.Flags().BoolVar(&withProxyProtocol, "proxy", false, "use proxy protocol")
+	installCmd.Flags().StringVar(&proxyProtocolTrustedIps, "proxyProtocolTrustedIPs", "", "proxy protocol trusted ips")
 	installCmd.Flags().StringVar(&ingressProvider, "ingressProvider", "", "ingress provider")
 	installCmd.Flags().StringVar(&endpointWeb, "endpointWeb", "80", "endpoint web")
 	installCmd.Flags().StringVar(&endpointWebsecure, "endpointWebsecure", "443", "endpoint websecure")
@@ -223,18 +238,27 @@ func init() {
 }
 
 type traefikValues struct {
-	AdditionalArguments []string
-	DnsProvider         string
-	DnsResolver         string
-	DnsResolverEmail    string
-	EnableDashboard     bool
-	EnableAccessLog     bool
-	DebugLog            bool
-	EndpointsWeb        string
-	EndpointsWebsecure  string
+	AdditionalArguments                []string
+	DnsProvider                        string
+	DnsResolver                        string
+	DnsResolverEmail                   string
+	EnableDashboard                    bool
+	EnableAccessLog                    bool
+	DebugLog                           bool
+	EndpointsWeb                       string
+	EndpointsWebsecure                 string
+	ServersTransportInsecureSkipVerify bool
+	ForwardedHeaders                   bool
+	ForwardedHeadersTrustedIPs         string
+	ProxyProtocol                      bool
+	ProxyProtocolTrustedIPs            string
+	DnsTZ                              string
 }
 
 var traefikValuesTmpl = `
+globalArguments:
+  - "--global.checknewversion=false"
+  - "--global.sendanonymoususage=false"
 global:
   sendAnonymousUsage: false
   checkNewVersion: false
@@ -257,13 +281,37 @@ rbac:
   enabled: true
 additionalArguments:
   {{- range $i, $arg := .AdditionalArguments }}
-    - "{{ printf "%s" . }}"
+  - "{{ printf "%s" . }}"
+  {{- end }}
+  {{- if .ServersTransportInsecureSkipVerify }}
+  - "--serversTransport.insecureSkipVerify"
+  {{- end }}
+  {{- if .ForwardedHeaders }}
+  - "--entrypoints.websecure.forwardedHeaders.trustedIPs={{ .ForwardedHeadersTrustedIPs }}"
+  - "--entrypoints.web.forwardedHeaders.trustedIPs={{ .ForwardedHeadersTrustedIPs }}"
+  {{- end }}
+  {{- if .ProxyProtocol }}
+  - "--entrypoints.websecure.proxyProtocol.trustedIPs={{ .ProxyProtocolTrustedIPs }}"
+  {{- end }}
+  {{- if .DnsProvider }}
+  - "--certificatesresolvers.{{ .DnsResolver }}-staging.acme.dnschallenge=true"
+  - "--certificatesresolvers.{{ .DnsResolver }}-staging.acme.dnschallenge.provider={{ .DnsProvider }}"
+  - "--certificatesresolvers.{{ .DnsResolver }}-staging.acme.dnschallenge.delayBeforeCheck=10"
+  - "--certificatesresolvers.{{ .DnsResolver }}-staging.acme.email={{ .DnsResolverEmail }}"
+  - "--certificatesresolvers.{{ .DnsResolver }}-staging.acme.storage=/data/acme.json"
+  - "--certificatesresolvers.{{ .DnsResolver }}-staging.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+  - "--certificatesresolvers.{{ .DnsResolver }}.acme.dnschallenge=true"
+  - "--certificatesresolvers.{{ .DnsResolver }}.acme.dnschallenge.provider={{ .DnsProvider }}"
+  - "--certificatesresolvers.{{ .DnsResolver }}.acme.dnschallenge.delayBeforeCheck=10"
+  - "--certificatesresolvers.{{ .DnsResolver }}.acme.email={{ .DnsResolverEmail }}"
+  - "--certificatesresolvers.{{ .DnsResolver }}.acme.storage=/data/acme.json"
+  - "--certificatesresolvers.{{ .DnsResolver }}.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
   {{- end }}
 ports:
   websecure:
     tls:
       enabled: true
-      certResolver: {{ .DnsResolver }}-prod
+      certResolver: {{ .DnsResolver }}
 
 persistence:
   enabled: true
@@ -278,44 +326,25 @@ ingressRoute:
 
 logs:
   general:
-    level: INFO
+  {{- if .DebugLog }}
+    level: DEBUG
+  {{- else }}
+	level: INFO
+  {{- end }}
   access:
     enabled: true
 pilot:
   enabled: false
 
-securityContext:
-  readOnlyRootFilesystem: false
-  runAsGroup: 0
-  runAsUser: 0
-  runAsNonRoot: false
-
 deployment:
   initContainers:
     - name: volume-permissions
       image: busybox:1.31.1
-      command: ["sh", "-c", "touch /data/acme.json; chmod -v 600 /data/acme.json"]
+      command: ["sh", "-c", "touch /data/acme.json; chmod -Rv 0600 /data/acme.json; cat /data/acme.json"]
       volumeMounts:
         - name: data
           mountPath: /data
 
-certificatesResolvers:
-  {{ .DnsResolver }}-prod:
-    acme:
-      email: {{ .DnsResolverEmail }}
-      storage: /data/acme.json
-      caServer: https://acme-v02.api.letsencrypt.org/directory
-      dnsChallenge:
-        provider: {{ .DnsProvider }}
-        delayBeforeCheck: 10
-  {{ .DnsResolver }}-staging:
-    acme:
-      email: {{ .DnsResolverEmail }}
-      storage: /data/acme.json
-      caServer: https://acme-staging-v02.api.letsencrypt.org/directory
-      dnsChallenge:
-        provider: {{ .DnsProvider }}
-        delayBeforeCheck: 0
 envFrom:
   - secretRef:
       name: traefik-dns-account-credentials
