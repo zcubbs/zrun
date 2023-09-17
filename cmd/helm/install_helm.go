@@ -7,9 +7,10 @@ package helm
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/pkg/helm"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
+	"github.com/zcubbs/x/helm"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 )
 
 // installHelm represents the list command
@@ -20,8 +21,8 @@ var installHelm = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		style.PrintColoredHeader("install helm cli")
 
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := ExecuteInstallHelmCmd()
 				if err != nil {
 					return err

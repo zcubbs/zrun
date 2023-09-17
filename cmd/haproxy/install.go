@@ -6,9 +6,10 @@ package haproxy
 
 import (
 	"github.com/spf13/cobra"
-	xos "github.com/zcubbs/zrun/pkg/os"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
+	"github.com/zcubbs/x/must"
+	xos "github.com/zcubbs/x/os"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 )
 
 // install represents the list command
@@ -21,8 +22,8 @@ var install = &cobra.Command{
 
 		style.PrintColoredHeader("install haproxy")
 
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := installHaproxy(verbose)
 				if err != nil {
 					return err

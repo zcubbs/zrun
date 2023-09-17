@@ -7,9 +7,10 @@ package argo
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/pkg/kubectl"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
+	kubectl "github.com/zcubbs/x/kubernetes"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 )
 
 var (
@@ -25,8 +26,8 @@ var addProjectCmd = &cobra.Command{
 
 		style.PrintColoredHeader("add argocd project")
 
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := addProject()
 				if err != nil {
 					return err

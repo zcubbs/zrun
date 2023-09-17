@@ -3,9 +3,9 @@ package traefik
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/zcubbs/x/helm"
+	"github.com/zcubbs/x/style"
 	"github.com/zcubbs/zrun/internal/configs"
-	"github.com/zcubbs/zrun/pkg/helm"
-	"github.com/zcubbs/zrun/pkg/style"
 )
 
 var uninstallCmd = &cobra.Command{

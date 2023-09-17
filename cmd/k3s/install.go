@@ -6,11 +6,12 @@ package k3s
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/zcubbs/x/k3s"
+	"github.com/zcubbs/x/kubernetes"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 	"github.com/zcubbs/zrun/internal/configs"
-	"github.com/zcubbs/zrun/pkg/k3s"
-	"github.com/zcubbs/zrun/pkg/kubernetes"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
 )
 
 var (
@@ -29,8 +30,8 @@ var install = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		style.PrintColoredHeader("install k3s")
 		verbose := Cmd.Flag("verbose").Value.String() == "true"
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := k3s.Install(k3s.Config{
 					Disable:                 disable,
 					TlsSan:                  tlsSan,

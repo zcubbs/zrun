@@ -6,7 +6,7 @@ package os
 
 import (
 	"github.com/spf13/cobra"
-	zos "github.com/zcubbs/zrun/pkg/os"
+	zos "github.com/zcubbs/x/os"
 )
 
 // upgrade represents the list command

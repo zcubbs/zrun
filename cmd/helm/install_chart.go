@@ -7,11 +7,12 @@ package helm
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/zcubbs/x/helm"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 	"github.com/zcubbs/zrun/cmd/k8s"
 	"github.com/zcubbs/zrun/internal/configs"
-	"github.com/zcubbs/zrun/pkg/helm"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
 	"helm.sh/helm/v3/pkg/cli/values"
 )
 
@@ -39,8 +40,8 @@ var installChart = &cobra.Command{
 			"install '%s' helm Chart\n",
 			chartName))
 
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := ExecuteInstallChartCmd(helm.InstallChartOptions{
 					Kubeconfig:   kubeconfig,
 					RepoName:     repoName,

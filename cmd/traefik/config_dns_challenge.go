@@ -3,9 +3,9 @@ package traefik
 import (
 	"context"
 	"fmt"
+	"github.com/zcubbs/x/kubernetes"
 	"github.com/zcubbs/zrun/cmd/vault"
 	"github.com/zcubbs/zrun/internal/configs"
-	"github.com/zcubbs/zrun/pkg/kubernetes"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"

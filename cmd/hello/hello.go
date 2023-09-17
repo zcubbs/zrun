@@ -6,8 +6,9 @@ package hello
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 )
 
 // Cmd represents the os command
@@ -17,8 +18,8 @@ var Cmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose := cmd.Flag("verbose").Value.String() == "true"
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				style.PrintColoredHeader("Hello")
 				style.PrintInfo("world!")
 				return nil

@@ -3,10 +3,11 @@ package haproxy
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/pkg/git"
-	xos "github.com/zcubbs/zrun/pkg/os"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
+	"github.com/zcubbs/x/git"
+	"github.com/zcubbs/x/must"
+	xos "github.com/zcubbs/x/os"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 	"os"
 	"path/filepath"
 	"strings"
@@ -36,8 +37,8 @@ var updateFromGitCmd = &cobra.Command{
 
 		style.PrintColoredHeader("configure haproxy from Git")
 
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := updateConfig(verbose)
 				if err != nil {
 					return err

@@ -7,9 +7,10 @@ package certmanager
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/pkg/kubectl"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
+	"github.com/zcubbs/x/kubernetes"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 )
 
 const letsEncryptIssuerTmpl = `---
@@ -55,9 +56,9 @@ var issuer = &cobra.Command{
 
 		style.PrintColoredHeader("add cert-manager issuer")
 
-		util.Must(
-			util.RunTask(func() error {
-				err := kubectl.ApplyManifest(letsEncryptIssuerTmpl, Issuer{
+		must.Succeed(
+			progress.RunTask(func() error {
+				err := kubernetes.ApplyManifest(letsEncryptIssuerTmpl, Issuer{
 					IssuerName:           issuerName,
 					IssuerEmail:          issuerEmail,
 					IssuerServer:         issuerServer,

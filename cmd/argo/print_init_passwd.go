@@ -3,8 +3,8 @@ package argo
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	kubectl "github.com/zcubbs/x/kubernetes"
 	"github.com/zcubbs/zrun/internal/configs"
-	"github.com/zcubbs/zrun/pkg/kubectl"
 )
 
 const (

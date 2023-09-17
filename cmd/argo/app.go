@@ -7,9 +7,10 @@ package argo
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/pkg/kubectl"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
+	"github.com/zcubbs/x/kubernetes"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 )
 
 var (
@@ -41,14 +42,14 @@ var appCmd = &cobra.Command{
 		style.PrintColoredHeader("add argocd application")
 		verbose := cmd.Flag("verbose").Value.String() == "true"
 
-		_ = util.RunTask(func() error {
-			util.Must(addApp(verbose))
+		_ = progress.RunTask(func() error {
+			must.Succeed(addApp(verbose))
 			return nil
 		}, true)
 	},
 }
 
-type ArgoApp struct {
+type App struct {
 	AppName          string
 	AppNamespace     string
 	IsHelm           bool
@@ -153,7 +154,7 @@ func addApp(verbose bool) error {
 	}
 
 	// create app
-	a := &ArgoApp{
+	a := &App{
 		AppName:          appName,
 		AppNamespace:     appNamespace,
 		IsHelm:           isHelm,
@@ -176,14 +177,14 @@ func addApp(verbose bool) error {
 
 	if isOci {
 		// Apply template
-		err := kubectl.ApplyManifest(argoAppOciTmpl, a, verbose)
+		err := kubernetes.ApplyManifest(argoAppOciTmpl, a, verbose)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
 
-	err := kubectl.ApplyManifest(argoAppTmpl, a, verbose)
+	err := kubernetes.ApplyManifest(argoAppTmpl, a, verbose)
 	if err != nil {
 		return err
 	}

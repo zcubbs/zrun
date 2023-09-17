@@ -6,11 +6,12 @@ package certmanager
 
 import (
 	"github.com/spf13/cobra"
+	helmPkg "github.com/zcubbs/x/helm"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/internal/configs"
-	helmPkg "github.com/zcubbs/zrun/pkg/helm"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"k8s.io/utils/strings/slices"
 )
@@ -28,8 +29,8 @@ var install = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		style.PrintColoredHeader("install cert-manager")
 
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := installChart()
 				if err != nil {
 					return err
@@ -43,7 +44,7 @@ var install = &cobra.Command{
 func installChart() error {
 	kubeconfig := configs.Config.Kubeconfig.Path
 
-	// chack if options.Values contains "installCRDs"
+	// check if options.Values contains "installCRDs"
 	// if not, add it
 	if !slices.Contains(options.Values, "installCRDs=true") {
 		options.Values = append(options.Values, "installCRDs=true")

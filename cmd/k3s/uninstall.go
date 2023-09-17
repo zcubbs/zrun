@@ -6,9 +6,10 @@ package k3s
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/pkg/k3s"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
+	"github.com/zcubbs/x/k3s"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 )
 
 // uninstall represents the list command
@@ -19,8 +20,8 @@ var uninstall = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose := Cmd.Flag("verbose").Value.String() == "true"
 		style.PrintColoredHeader("uninstall k3s")
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := k3s.Uninstall(verbose)
 				if err != nil {
 					return err

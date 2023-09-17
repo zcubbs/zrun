@@ -7,10 +7,11 @@ package k8s
 import (
 	"context"
 	"github.com/spf13/cobra"
+	"github.com/zcubbs/x/kubernetes"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 	"github.com/zcubbs/zrun/internal/configs"
-	"github.com/zcubbs/zrun/pkg/kubernetes"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
 )
 
 var (
@@ -33,8 +34,8 @@ var createContainerRegistryCmd = &cobra.Command{
 
 		style.PrintColoredHeader("add container registry secret")
 
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := createContainerRegistrySecret(cmd.Context(), verbose)
 				if err != nil {
 					return err

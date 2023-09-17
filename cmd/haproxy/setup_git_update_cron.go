@@ -3,9 +3,10 @@ package haproxy
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	xos "github.com/zcubbs/zrun/pkg/os"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
+	"github.com/zcubbs/x/must"
+	xos "github.com/zcubbs/x/os"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 )
 
 // setupGitCronCmd represents the list command
@@ -18,8 +19,8 @@ var setupGitCronCmd = &cobra.Command{
 
 		style.PrintColoredHeader("configure haproxy for k3s")
 
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := setupCron(verbose)
 				if err != nil {
 					return err

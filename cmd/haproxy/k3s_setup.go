@@ -7,11 +7,12 @@ package haproxy
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/zcubbs/zrun/pkg/bash"
-	"github.com/zcubbs/zrun/pkg/kubectl"
-	xos "github.com/zcubbs/zrun/pkg/os"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
+	"github.com/zcubbs/x/bash"
+	"github.com/zcubbs/x/must"
+	xos "github.com/zcubbs/x/os"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
+	"github.com/zcubbs/x/templates"
 	"os"
 )
 
@@ -39,8 +40,8 @@ var k3sSetupCmd = &cobra.Command{
 
 		style.PrintColoredHeader("configure haproxy for k3s")
 
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := configureHaproxyK3s(verbose)
 				if err != nil {
 					return err
@@ -71,7 +72,7 @@ func configureHaproxyK3s(verbose bool) error {
 		InsecurePort: insecurePort,
 	}
 
-	configFileContent, err := kubectl.ApplyTmpl(haproxyK3sConfigTmpl, k3sConfig, verbose)
+	configFileContent, err := templates.ApplyTmpl(haproxyK3sConfigTmpl, k3sConfig, verbose)
 	if err != nil {
 		return fmt.Errorf("failed to apply template \n %w", err)
 	}

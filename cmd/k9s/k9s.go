@@ -6,8 +6,8 @@ package k9s
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/zcubbs/x/bash"
 	"github.com/zcubbs/zrun/internal/configs"
-	"github.com/zcubbs/zrun/pkg/bash"
 )
 
 // Cmd represents the os command

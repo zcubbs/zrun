@@ -7,12 +7,12 @@ package awx
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/zcubbs/x/bash"
+	helmPkg "github.com/zcubbs/x/helm"
+	kubectl "github.com/zcubbs/x/kubernetes"
+	"github.com/zcubbs/x/must"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/internal/configs"
-	"github.com/zcubbs/zrun/pkg/bash"
-	helmPkg "github.com/zcubbs/zrun/pkg/helm"
-	"github.com/zcubbs/zrun/pkg/kubectl"
-	"github.com/zcubbs/zrun/pkg/util"
 	"helm.sh/helm/v3/pkg/cli/values"
 )
 
@@ -23,9 +23,9 @@ var install = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose := cmd.Flag("verbose").Value.String() == "true"
-		util.Must(installOperator(verbose))
-		util.Must(deployInstance(instanceTmpl, secretTmpl, verbose))
-		util.Must(configureAwx(verbose))
+		must.Succeed(installOperator(verbose))
+		must.Succeed(deployInstance(instanceTmpl, secretTmpl, verbose))
+		must.Succeed(configureAwx(verbose))
 	},
 }
 

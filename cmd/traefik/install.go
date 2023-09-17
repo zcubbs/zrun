@@ -7,12 +7,13 @@ package traefik
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	helmPkg "github.com/zcubbs/x/helm"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
+	"github.com/zcubbs/x/templates"
 	"github.com/zcubbs/zrun/cmd/helm"
 	"github.com/zcubbs/zrun/internal/configs"
-	helmPkg "github.com/zcubbs/zrun/pkg/helm"
-	"github.com/zcubbs/zrun/pkg/kubectl"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"os"
 )
@@ -22,40 +23,22 @@ const (
 )
 
 var (
-	defaultArgs = [...]string{
-		"--entrypoints.websecure.http.tls",
-		"--global.sendanonymoususage=false",
-	}
-	insecureArgs = [...]string{
-		"--serversTransport.insecureSkipVerify",
-	}
-
-	insecureForwardedHeadersArgs = [...]string{
-		"--entrypoints.websecure.forwardedHeaders.insecure",
-		"--entrypoints.web.forwardedHeaders.insecure",
-	}
-
-	proxyArgs = [...]string{
-		"--entrypoints.websecure.proxyProtocol",
-		"--entrypoints.websecure.proxyProtocol.insecure",
-	}
-)
-
-var (
-	chartVersion               string
-	options                    values.Options
-	additionalArgs             []string
-	useDefaults                bool
-	withInsecure               bool
-	withForwardedHeaders       bool
-	forwardedHeadersTrustedIps string
-	withProxyProtocol          bool
-	proxyProtocolTrustedIps    string
-	ingressProvider            string
-	endpointWeb                string
-	endpointWebsecure          string
-	debugLogs                  bool
-	accessLogs                 bool
+	chartVersion                 string
+	options                      values.Options
+	additionalArgs               []string
+	useDefaults                  bool
+	withInsecure                 bool
+	withForwardedHeaders         bool
+	withForwardedHeadersInsecure bool
+	forwardedHeadersTrustedIps   string
+	withProxyProtocol            bool
+	withProxyProtocolInsecure    bool
+	proxyProtocolTrustedIps      string
+	ingressProvider              string
+	endpointWeb                  string
+	endpointWebsecure            string
+	debugLogs                    bool
+	accessLogs                   bool
 )
 
 var (
@@ -72,7 +55,8 @@ var (
 	ovhAppKeyEnvKey   = "OVH_APP_KEY"
 	ovhAppKeyVaultKey = "ovhAppKey"
 
-	ovhAppSecret         string
+	ovhAppSecret string
+	/* #nosec */
 	ovhAppSecretEnvKey   = "OVH_APP_SECRET"
 	ovhAppSecretVaultKey = "ovhAppSecret"
 
@@ -84,7 +68,8 @@ var (
 	azureClientIDEnvKey   = "AZURE_CLIENT_ID"
 	azureClientIDVaultKey = "azureClientID"
 
-	azureClientSecret         string
+	azureClientSecret string
+	/* #nosec */
 	azureClientSecretEnvKey   = "AZURE_CLIENT_SECRET"
 	azureClientSecretVaultKey = "azureClientSecret"
 
@@ -101,8 +86,8 @@ var installCmd = &cobra.Command{
 
 		style.PrintColoredHeader("install traefik")
 
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := installChart(verbose)
 				if err != nil {
 					return err
@@ -115,37 +100,9 @@ var installCmd = &cobra.Command{
 func installChart(verbose bool) error {
 	kubeconfig := configs.Config.Kubeconfig.Path
 
-	var additionalArgs []string
-
-	if withInsecure {
-		additionalArgs = append(additionalArgs, insecureArgs[:]...)
-
-		if withForwardedHeaders {
-			additionalArgs = append(additionalArgs, insecureForwardedHeadersArgs[:]...)
-		}
-	}
-
-	if withProxyProtocol {
-		additionalArgs = append(additionalArgs, proxyArgs[:]...)
-	}
-
-	// check if useDefaults is true, if so, use default values
-	if useDefaults {
-		additionalArgs = append(additionalArgs, defaultArgs[:]...)
-	}
-
 	// can't set both ingressProvider and dnsProvider
 	if ingressProvider != "" && dnsProviderString != "" {
 		return fmt.Errorf("can't set both ingressProvider and dnsProvider")
-	}
-
-	// check if ingressProvider is set, if so, use it
-	if ingressProvider != "" {
-		additionalArgs = append(additionalArgs, fmt.Sprintf(
-			"%s=%s",
-			"--providers.kubernetesIngress.ingressClass",
-			ingressProvider,
-		))
 	}
 
 	if dnsProviderString != "" {
@@ -162,8 +119,8 @@ func installChart(verbose bool) error {
 	valuesPath := "values.yaml"
 
 	tv := traefikValues{
-		AdditionalArguments: []string{},
-		//AdditionalArguments: additionalArgs,
+		AdditionalArguments:                []string{},
+		IngressProvider:                    ingressProvider,
 		DnsProvider:                        dnsProviderString,
 		DnsResolver:                        dnsResolver,
 		DnsResolverEmail:                   dnsResolverEmail,
@@ -174,13 +131,15 @@ func installChart(verbose bool) error {
 		EndpointsWebsecure:                 endpointWebsecure,
 		ServersTransportInsecureSkipVerify: withInsecure,
 		ForwardedHeaders:                   withForwardedHeaders,
+		ForwardedHeadersInsecure:           withForwardedHeadersInsecure,
 		ForwardedHeadersTrustedIPs:         forwardedHeadersTrustedIps,
 		ProxyProtocol:                      withProxyProtocol,
+		ProxyProtocolInsecure:              withProxyProtocolInsecure,
 		ProxyProtocolTrustedIPs:            proxyProtocolTrustedIps,
 		DnsTZ:                              dnsTz,
 	}
 	// create traefik values.yaml from template
-	configFileContent, err := kubectl.ApplyTmpl(traefikValuesTmpl, tv, verbose)
+	configFileContent, err := templates.ApplyTmpl(traefikValuesTmpl, tv, verbose)
 	if err != nil {
 		return fmt.Errorf("failed to apply template \n %w", err)
 	}
@@ -221,8 +180,10 @@ func init() {
 	installCmd.Flags().BoolVar(&useDefaults, "defaults", false, "use default values")
 	installCmd.Flags().BoolVar(&withInsecure, "insecure", false, "use insecure connection")
 	installCmd.Flags().BoolVar(&withForwardedHeaders, "forwardedHeaders", false, "use insecure forwarded headers")
+	installCmd.Flags().BoolVar(&withForwardedHeadersInsecure, "forwardedHeadersInsecure", false, "use insecure forwarded headers")
 	installCmd.Flags().StringVar(&forwardedHeadersTrustedIps, "forwardedHeadersTrustedIPs", "", "forwarded headers trusted ips")
 	installCmd.Flags().BoolVar(&withProxyProtocol, "proxy", false, "use proxy protocol")
+	installCmd.Flags().BoolVar(&withProxyProtocolInsecure, "proxyInsecure", false, "use insecure proxy protocol")
 	installCmd.Flags().StringVar(&proxyProtocolTrustedIps, "proxyProtocolTrustedIPs", "", "proxy protocol trusted ips")
 	installCmd.Flags().StringVar(&ingressProvider, "ingressProvider", "", "ingress provider")
 	installCmd.Flags().StringVar(&endpointWeb, "endpointWeb", "80", "endpoint web")
@@ -239,6 +200,7 @@ func init() {
 
 type traefikValues struct {
 	AdditionalArguments                []string
+	IngressProvider                    string
 	DnsProvider                        string
 	DnsResolver                        string
 	DnsResolverEmail                   string
@@ -249,8 +211,10 @@ type traefikValues struct {
 	EndpointsWebsecure                 string
 	ServersTransportInsecureSkipVerify bool
 	ForwardedHeaders                   bool
+	ForwardedHeadersInsecure           bool
 	ForwardedHeadersTrustedIPs         string
 	ProxyProtocol                      bool
+	ProxyProtocolInsecure              bool
 	ProxyProtocolTrustedIPs            string
 	DnsTZ                              string
 }
@@ -287,11 +251,24 @@ additionalArguments:
   - "--serversTransport.insecureSkipVerify"
   {{- end }}
   {{- if .ForwardedHeaders }}
-  - "--entrypoints.websecure.forwardedHeaders.trustedIPs={{ .ForwardedHeadersTrustedIPs }}"
-  - "--entrypoints.web.forwardedHeaders.trustedIPs={{ .ForwardedHeadersTrustedIPs }}"
+  {{- if .ForwardedHeadersInsecure }}
+  - "--entrypoints.websecure.forwardedHeaders.insecure"
+  {{- end }}
+  {{- if .ForwardedHeadersTrustedIPs }}
+  - "--entrypoints.websecure.forwardedHeaders.trustedIPs=127.0.0.1/32,{{ .ForwardedHeadersTrustedIPs }}"
+  - "--entrypoints.web.forwardedHeaders.trustedIPs=127.0.0.1/32,{{ .ForwardedHeadersTrustedIPs }}"
+  {{- end }}
   {{- end }}
   {{- if .ProxyProtocol }}
-  - "--entrypoints.websecure.proxyProtocol.trustedIPs={{ .ProxyProtocolTrustedIPs }}"
+  {{- if .ProxyProtocolInsecure }}
+  - "--entrypoints.websecure.proxyProtocol.insecure"
+  {{- end }}
+  {{- if .ProxyProtocolTrustedIPs }}
+  - "--entrypoints.websecure.proxyProtocol.trustedIPs=127.0.0.1/32,{{ .ProxyProtocolTrustedIPs }}"
+  {{- end }}
+  {{- end }}
+  {{- if IngressProvider }}
+  - "{{ printf "%s=%s" "--providers.kubernetesIngress.ingressClass" .IngressProvider }}"
   {{- end }}
   {{- if .DnsProvider }}
   - "--certificatesresolvers.{{ .DnsResolver }}-staging.acme.dnschallenge=true"

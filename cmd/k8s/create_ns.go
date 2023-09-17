@@ -7,10 +7,11 @@ package k8s
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	kubectl "github.com/zcubbs/x/kubernetes"
+	"github.com/zcubbs/x/must"
+	"github.com/zcubbs/x/progress"
+	"github.com/zcubbs/x/style"
 	"github.com/zcubbs/zrun/internal/configs"
-	"github.com/zcubbs/zrun/pkg/kubectl"
-	"github.com/zcubbs/zrun/pkg/style"
-	"github.com/zcubbs/zrun/pkg/util"
 )
 
 var newNamespaces []string
@@ -22,8 +23,8 @@ var createNamespaceCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		style.PrintColoredHeader("create k8s namespace")
-		util.Must(
-			util.RunTask(func() error {
+		must.Succeed(
+			progress.RunTask(func() error {
 				err := createNamespace(
 					configs.Config.Kubeconfig.Path,
 					newNamespaces,

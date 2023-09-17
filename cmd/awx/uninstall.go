@@ -7,11 +7,11 @@ package awx
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/zcubbs/x/bash"
+	"github.com/zcubbs/x/helm"
+	kubectl "github.com/zcubbs/x/kubernetes"
+	"github.com/zcubbs/x/must"
 	"github.com/zcubbs/zrun/internal/configs"
-	"github.com/zcubbs/zrun/pkg/bash"
-	"github.com/zcubbs/zrun/pkg/helm"
-	"github.com/zcubbs/zrun/pkg/kubectl"
-	"github.com/zcubbs/zrun/pkg/util"
 )
 
 // upgrade represents the list command
@@ -20,8 +20,8 @@ var uninstall = &cobra.Command{
 	Short: "Uninstall awx",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		util.Must(nukeOperator())
-		util.Must(nukeInstance(instanceTmpl, secretTmpl))
+		must.Succeed(nukeOperator())
+		must.Succeed(nukeInstance(instanceTmpl, secretTmpl))
 	},
 }
 

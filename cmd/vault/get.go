@@ -7,7 +7,7 @@ package vault
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	zvault "github.com/zcubbs/zrun/pkg/vault"
+	zvault "github.com/zcubbs/x/vault"
 	"os"
 )
 
